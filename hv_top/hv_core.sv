@@ -39,12 +39,12 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic                                        i_io_intb                       ,
     input  logic                                        i_io_inta                       ,
 
-    output logic 		                                o_bist_hv_ov                    ,
-    output logic 		                                o_bist_hv_ot                    ,
-    output logic 		                                o_bist_hv_opscod                ,
-    output logic 		                                o_bist_hv_oc                    ,
-    output logic 		                                o_bist_hv_sc                    ,
-    output logic 		                                o_bist_hv_adc                   ,
+    output logic                                        o_bist_hv_ov                    ,
+    output logic                                        o_bist_hv_ot                    ,
+    output logic                                        o_bist_hv_opscod                ,
+    output logic                                        o_bist_hv_oc                    ,
+    output logic                                        o_bist_hv_sc                    ,
+    output logic                                        o_bist_hv_adc                   ,
 
     input  logic [3:    0]                              i_off_vbn_read                  ,
     input  logic [3:    0]                              i_on_vbn_read                   ,
