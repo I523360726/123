@@ -391,7 +391,7 @@ hv_ang_val_sample U_HV_ANG_VAL_SAMPLE(
     .i_off_vbn_read                 (i_off_vbn_read                     ),
     .i_on_vbn_read                  (i_on_vbn_read                      ),
     .i_cnt_del_read                 (i_cnt_del_read                     ),
-    .i_reg_dvdt_tm                  (i_reg_dvdt_tm                      ),
+    .i_reg_dvdt_tm                  (o_reg_dvdt_tm                      ),
 
     .o_cap_trim_code_read           (cap_trim_code_read                 ),
     .o_cnt_del_read                 (cnt_del_read                       ),
