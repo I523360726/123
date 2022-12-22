@@ -71,7 +71,6 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     output str_reg_iso_demo_trim                        o_reg_iso_demo_trim             ,
     output str_reg_iso_test_sw                          o_reg_iso_test_sw               ,
     output str_reg_iso_osc_jit                          o_reg_iso_osc_jit               ,
-    output logic [REG_DW-1:      0]                     o_reg_ana_reserved_reg          ,
     output logic [REG_DW-1:      0]                     o_reg_ana_reserved_reg2         ,
     output str_reg_config1_dr_src_snk_both              o_reg_config1_dr_src_snk_both   ,
     output str_reg_config2_dr_src_sel                   o_reg_config2_dr_src_sel        ,
