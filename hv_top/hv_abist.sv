@@ -14,31 +14,31 @@ module hv_abist #(
 )(
     input  logic                i_bist_en                ,
 
-    output logic 		        o_bist_hv_ov             ,
+    output logic                o_bist_hv_ov             ,
     input  logic                i_hv_vcc_ov              ,
 
-    output logic 		        o_bist_hv_ot             ,
+    output logic                o_bist_hv_ot             ,
     input  logic                i_hv_ot                  ,
 
-    output logic 		        o_bist_hv_opscod         ,
+    output logic                o_bist_hv_opscod         ,
     input  logic                i_hv_desat_flt           ,
 
-    output logic 		        o_bist_hv_oc             ,
+    output logic                o_bist_hv_oc             ,
     input  logic                i_hv_oc                  ,
 
-    output logic 		        o_bist_hv_sc             ,
+    output logic                o_bist_hv_sc             ,
     input  logic                i_hv_scp_flt             ,
 
-    output  logic 		        o_bist_hv_adc            ,
+    output logic                o_bist_hv_adc            ,
     input  logic [ADC_DW-1: 0]  i_hv_adc_data1           ,
     input  logic [ADC_DW-1: 0]  i_hv_adc_data2           ,
 
-    output logic                o_bist_hv_ov_status      ,//1: bist success; 0: bist failure.
-    output logic                o_bist_hv_ot_status      ,//1: bist success; 0: bist failure.
-    output logic                o_bist_hv_opscod_status  ,//1: bist success; 0: bist failure.
-    output logic                o_bist_hv_oc_status      ,//1: bist success; 0: bist failure.
-    output logic                o_bist_hv_sc_status      ,//1: bist success; 0: bist failure.
-    output logic                o_bist_hv_adc_status     ,//1: bist success; 0: bist failure.
+    output logic                o_bist_hv_ov_status      ,
+    output logic                o_bist_hv_ot_status      ,
+    output logic                o_bist_hv_opscod_status  ,
+    output logic                o_bist_hv_oc_status      ,
+    output logic                o_bist_hv_sc_status      ,
+    output logic                o_bist_hv_adc_status     ,
 
     output logic                o_lbist_en               ,
 
@@ -122,10 +122,10 @@ generate;
     for(genvar i=0; i<BIST_ITEM_NUM; i=i+1) begin: GEN_BIST_SIG
         always_ff@(posedge i_clk or negedge i_rst_n) begin
             if(~i_rst_n) begin
-                bist_status[i] <= 1'b0;
+                bist_status[i] <= 1'b1;
             end
               else if(bist_detect_sig[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) begin
-                bist_status[i] <= 1'b1;
+                bist_status[i] <= 1'b0;
             end
             else;
         end
@@ -179,3 +179,4 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
