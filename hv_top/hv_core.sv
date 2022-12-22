@@ -444,7 +444,6 @@ hv_reg_slv U_HV_REG_SLV(
     .o_reg_iso_demo_trim            (o_reg_iso_demo_trim                ),
     .o_reg_iso_test_sw              (o_reg_iso_test_sw                  ),
     .o_reg_iso_osc_jit              (o_reg_iso_osc_jit                  ),
-    .o_reg_ana_reserved_reg         (o_reg_ana_reserved_reg             ),
     .o_reg_ana_reserved_reg2        (o_reg_ana_reserved_reg2            ),
     .o_reg_config1_dr_src_snk_both  (o_reg_config1_dr_src_snk_both      ),
     .o_reg_config2_dr_src_sel       (o_reg_config2_dr_src_sel           ),
