@@ -19,4 +19,4 @@ $PRJ_ROOT/hv_top/hv_reg_slv.sv
 $PRJ_ROOT/hv_top/hv_wdg_ctrl.sv
 $PRJ_ROOT/hv_top/hv_ang_val_sample.sv
 $PRJ_ROOT/hv_top/hv_core.sv
-$PRJ_ROOT/hv_top/hv_wrap.sv
+$PRJ_ROOT/hv_top/dig_hv_top.sv
