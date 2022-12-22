@@ -40,6 +40,33 @@ module lv_core import com_pkg::*; import lv_pkg::*;
     input  logic                                        i_io_intb                       ,
     input  logic                                        i_io_inta                       ,
 
+    output logic                                        o_efuse_wmode                   ,
+    output logic                                        o_io_efuse_setb                 ,
+    output logic                                        o_efuse_wr_p                    ,
+    output logic                                        o_efuse_rd_p                    ,
+    output logic [5:       0]                           o_efuse_addr                    ,
+    output logic [7:       0]                           o_efuse_wdata0                  ,
+    output logic [7:       0]                           o_efuse_wdata1                  ,
+    output logic [7:       0]                           o_efuse_wdata2                  ,
+    output logic [7:       0]                           o_efuse_wdata3                  ,
+    output logic [7:       0]                           o_efuse_wdata4                  ,
+    output logic [7:       0]                           o_efuse_wdata5                  ,
+    output logic [7:       0]                           o_efuse_wdata6                  ,
+    output logic [7:       0]                           o_efuse_wdata7                  ,
+    input  logic                                        i_efuse_op_finish               ,
+    input  logic                                        i_efuse_reg_update              ,
+    input  logic [7:       0]                           i_efuse_reg_data0               ,
+    input  logic [7:       0]                           i_efuse_reg_data1               ,
+    input  logic [7:       0]                           i_efuse_reg_data2               ,
+    input  logic [7:       0]                           i_efuse_reg_data3               ,
+    input  logic [7:       0]                           i_efuse_reg_data4               ,
+    input  logic [7:       0]                           i_efuse_reg_data5               ,
+    input  logic [7:       0]                           i_efuse_reg_data6               ,
+    input  logic [7:       0]                           i_efuse_reg_data7               ,
+
+    output logic                                        o_efuse_load_req                ,
+    input  logic                                        i_efuse_load_done               ,
+
     output logic                                        o_dgt_ang_pwm_en                ,
     output logic                                        o_dgt_ang_fsc_en                ,
   
@@ -176,8 +203,6 @@ logic [EFUSE_DATA_NUM-1:     0][EFUSE_DW-1: 0]      efuse_reg_data          ;
 str_reg_mode                                        reg_mode                ;
 str_reg_status1                                     reg_status1             ;
 str_reg_status2                                     reg_status2             ;
-str_reg_efuse_config                                reg_die1_efuse_config   ;
-str_reg_efuse_status                                reg_die1_efuse_status   ;
 
 logic                                               test_st_reg_en          ;
 logic                                               cfg_st_reg_en           ;
@@ -190,9 +215,6 @@ logic                                               fsm_dgt_pwm_en          ;
 logic                                               fsm_dgt_fsc_en          ;
 logic                                               bist_en                 ;
 
-logic                                               efuse_load_req          ;
-logic                                               efuse_load_done         ; //hardware lanch, indicate efuse have load done.
-
 logic                                               lbist_en                ;
 logic                                               lv_bist_fail            ;
 
@@ -201,10 +223,16 @@ logic                                               lv_bist_fail            ;
 //main code
 //==================================
 spi_slv U_SPI_SLV(
+    .i_s32_16                   (1'b1                               ),
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
     .i_spi_mosi                 (i_spi_mosi                         ),
     .o_spi_miso                 (o_spi_miso                         ),
+
+    .i_d2d1rx_dpu_vld           (1'b0                               ),
+    .i_d2d1rx_dpu_addr          (8'b0                               ),
+    .i_d2d1rx_dpu_data          (8'b0                               ),
+    .o_dpu_d2d1rx_rdy           (                                   ),   
 
     .i_spi_slv_en               (fsm_spi_slv_en                     ),
 
@@ -418,8 +446,21 @@ lv_reg_slv U_LV_REG_SLV(
     .i_hv_bist1                 (reg_hv_bist1                       ),
     .i_hv_bist2                 (reg_hv_bist2                       ),
 
-    .i_efuse_op_finish          (1'b1                               ),
-    .i_efuse_reg_update         (1'b1                               ),
+    .o_efuse_wmode              (o_efuse_wmode                      ),
+    .o_efuse_wr_p               (o_efuse_wr_p                       ),
+    .o_efuse_rd_p               (o_efuse_rd_p                       ),
+    .o_efuse_addr               (o_efuse_addr                       ),
+    .o_efuse_wdata0             (o_efuse_wdata0                     ),
+    .o_efuse_wdata1             (o_efuse_wdata1                     ),
+    .o_efuse_wdata2             (o_efuse_wdata2                     ),
+    .o_efuse_wdata3             (o_efuse_wdata3                     ),
+    .o_efuse_wdata4             (o_efuse_wdata4                     ),
+    .o_efuse_wdata5             (o_efuse_wdata5                     ),
+    .o_efuse_wdata6             (o_efuse_wdata6                     ),
+    .o_efuse_wdata7             (o_efuse_wdata7                     ),
+
+    .i_efuse_op_finish          (efuse_op_finish                    ),
+    .i_efuse_reg_update         (efuse_reg_update                   ),
     .i_efuse_reg_data           (efuse_reg_data                     ),
 
     .o_reg_mode                 (reg_mode                           ),
@@ -427,8 +468,6 @@ lv_reg_slv U_LV_REG_SLV(
     .o_reg_com_config2          (reg_com_config2                    ),
     .o_reg_status1              (reg_status1                        ),
     .o_reg_status2              (reg_status2                        ),
-    .o_reg_die1_efuse_config    (reg_die1_efuse_config              ),
-    .o_reg_die1_efuse_status    (reg_die1_efuse_status              ),
 
     .o_reg_iso_bgr_trim         (o_reg_iso_bgr_trim                 ),
     .o_reg_iso_con_ibias_trim   (o_reg_iso_con_ibias_trim           ),
@@ -501,8 +540,8 @@ lv_ctrl_unit U_LV_CTRL_UNIT(
     .i_hv_intb_n                (hv_intb_n                          ),
     .o_intb_n                   (o_intb_n                           ),
 
-    .o_efuse_load_req           (efuse_load_req                     ),
-    .i_efuse_load_done          (1'b0                               ), //hardware lanch, indicate efuse have load done.
+    .o_efuse_load_req           (o_efuse_load_req                   ),
+    .i_efuse_load_done          (i_efuse_load_done                  ), //hardware lanch, indicate efuse have load done.
     
     .o_fsm_wdg_owt_tx_req       (fsm_wdg_owt_tx_req                 ),
     .i_owt_rx_ack               (owt_rx_ack                         ),
@@ -544,6 +583,19 @@ lv_lbist U_LV_LBIST(
     .i_rst_n                    (i_rst_n                            )
 );
 
+
+assign o_io_efuse_setb   = i_setb             ;
+assign efuse_op_finish   = i_efuse_op_finish  ;
+assign efuse_reg_update  = i_efuse_reg_update ;
+assign efuse_reg_data[0] = i_efuse_reg_data0  ;
+assign efuse_reg_data[1] = i_efuse_reg_data1  ;
+assign efuse_reg_data[2] = i_efuse_reg_data2  ;
+assign efuse_reg_data[3] = i_efuse_reg_data3  ;
+assign efuse_reg_data[4] = i_efuse_reg_data4  ;
+assign efuse_reg_data[5] = i_efuse_reg_data5  ;
+assign efuse_reg_data[6] = i_efuse_reg_data6  ;
+assign efuse_reg_data[7] = i_efuse_reg_data7  ;
+
 // synopsys translate_off    
 //==================================
 //assertion
@@ -551,6 +603,36 @@ lv_lbist U_LV_LBIST(
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
