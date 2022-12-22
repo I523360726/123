@@ -13,13 +13,21 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     `include "hv_param.svh"
     parameter END_OF_LIST = 1
 )( 
+    input  logic                                        i_s32_16                        ,
     input  logic                                        i_spi_sclk                      ,
     input  logic                                        i_spi_csb                       ,
     input  logic                                        i_spi_mosi                      ,
     output logic                                        o_spi_miso                      , 
 
+    input  logic                                        i_d2d1rx_dpu_vld                ,
+    input  logic [7:    0]                              i_d2d1rx_dpu_addr               ,
+    input  logic [7:    0]                              i_d2d1rx_dpu_data               ,
+    output logic                                        o_dpu_d2d1rx_rdy                ,
+
     output logic                                        o_hv_lv_owt_tx                  ,
     input  logic                                        i_lv_hv_owt_rx                  ,
+
+    input  logic                                        i_setb                          ,
 
     input  logic                                        i_io_test_mode                  ,
     output logic                                        o_fsm_ang_test_en               ,
@@ -39,12 +47,12 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic                                        i_io_intb                       ,
     input  logic                                        i_io_inta                       ,
 
-    output logic                                        o_bist_hv_ov                    ,
-    output logic                                        o_bist_hv_ot                    ,
-    output logic                                        o_bist_hv_opscod                ,
-    output logic                                        o_bist_hv_oc                    ,
-    output logic                                        o_bist_hv_sc                    ,
-    output logic                                        o_bist_hv_adc                   ,
+    output logic 		                                o_bist_hv_ov                    ,
+    output logic 		                                o_bist_hv_ot                    ,
+    output logic 		                                o_bist_hv_opscod                ,
+    output logic 		                                o_bist_hv_oc                    ,
+    output logic 		                                o_bist_hv_sc                    ,
+    output logic 		                                o_bist_hv_adc                   ,
 
     input  logic [3:    0]                              i_off_vbn_read                  ,
     input  logic [3:    0]                              i_on_vbn_read                   ,
@@ -54,6 +62,49 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic [9:    0]                              i_adc_data2                     ,
     input  logic                                        i_adc_ready1                    ,
     input  logic                                        i_adc_ready2                    ,
+
+    output logic                                        o_efuse_wmode                   ,
+    output logic                                        o_io_efuse_setb                 ,
+    output logic                                        o_efuse_wr_p                    ,
+    output logic                                        o_efuse_rd_p                    ,
+    output logic [5:       0]                           o_efuse_addr                    ,
+    output logic [7:       0]                           o_efuse_wdata0                  ,
+    output logic [7:       0]                           o_efuse_wdata1                  ,
+    output logic [7:       0]                           o_efuse_wdata2                  ,
+    output logic [7:       0]                           o_efuse_wdata3                  ,
+    output logic [7:       0]                           o_efuse_wdata4                  ,
+    output logic [7:       0]                           o_efuse_wdata5                  ,
+    output logic [7:       0]                           o_efuse_wdata6                  ,
+    output logic [7:       0]                           o_efuse_wdata7                  ,
+    output logic [7:       0]                           o_efuse_wdata8                  ,
+    output logic [7:       0]                           o_efuse_wdata9                  ,
+    output logic [7:       0]                           o_efuse_wdata10                 ,
+    output logic [7:       0]                           o_efuse_wdata11                 ,
+    output logic [7:       0]                           o_efuse_wdata12                 ,
+    output logic [7:       0]                           o_efuse_wdata13                 ,
+    output logic [7:       0]                           o_efuse_wdata14                 ,
+    output logic [7:       0]                           o_efuse_wdata15                 ,
+    input  logic                                        i_efuse_op_finish               ,
+    input  logic                                        i_efuse_reg_update              ,
+    input  logic [7:       0]                           i_efuse_reg_data0               ,
+    input  logic [7:       0]                           i_efuse_reg_data1               ,
+    input  logic [7:       0]                           i_efuse_reg_data2               ,
+    input  logic [7:       0]                           i_efuse_reg_data3               ,
+    input  logic [7:       0]                           i_efuse_reg_data4               ,
+    input  logic [7:       0]                           i_efuse_reg_data5               ,
+    input  logic [7:       0]                           i_efuse_reg_data6               ,
+    input  logic [7:       0]                           i_efuse_reg_data7               ,
+    input  logic [7:       0]                           i_efuse_reg_data8               ,
+    input  logic [7:       0]                           i_efuse_reg_data9               ,
+    input  logic [7:       0]                           i_efuse_reg_data10              ,
+    input  logic [7:       0]                           i_efuse_reg_data11              ,
+    input  logic [7:       0]                           i_efuse_reg_data12              ,
+    input  logic [7:       0]                           i_efuse_reg_data13              ,
+    input  logic [7:       0]                           i_efuse_reg_data14              ,
+    input  logic [7:       0]                           i_efuse_reg_data15              ,
+
+    output logic                                        o_efuse_load_req                ,
+    input  logic                                        i_efuse_load_done               ,
 
     input  logic                                        i_ang_dgt_pwm_wv                , //analog pwm ctrl to digtial pwm ctrl pwm wave
     input  logic                                        i_ang_dgt_pwm_fs                ,
@@ -194,9 +245,6 @@ logic [CTRL_FSM_ST_W-1:      0]                     hv_ctrl_cur_st          ;
     
 logic                                               bist_en                 ;
     
-logic                                               efuse_load_req          ;
-logic                                               efuse_load_done         ; //hardware lanch, indicate efuse have load done.
-    
 logic                                               lbist_en                ;
 logic                                               hv_bist_fail            ;
     
@@ -227,14 +275,23 @@ logic                                               vrtmon                  ;
 
 logic [7:                   0]                      cap_trim_code_read      ;
 logic [5:                   0]                      cnt_del_read            ;
+
+logic [7:                   0]                      hv_bist1                ;
+logic [7:                   0]                      hv_bist2                ;
 //==================================        
 //main code
 //==================================
 spi_slv U_SPI_SLV(
+    .i_s32_16                   (i_s32_16                           ),
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
     .i_spi_mosi                 (i_spi_mosi                         ),
     .o_spi_miso                 (o_spi_miso                         ),
+
+    .i_d2d1rx_dpu_vld           (i_d2d1rx_dpu_vld                   ),
+    .i_d2d1rx_dpu_addr          (i_d2d1rx_dpu_addr                  ),
+    .i_d2d1rx_dpu_data          (i_d2d1rx_dpu_data                  ),
+    .o_dpu_d2d1rx_rdy           (o_dpu_d2d1rx_rdy                   ),    
 
     .i_spi_slv_en               (fsm_spi_slv_en                     ),
 
@@ -416,11 +473,32 @@ hv_reg_slv U_HV_REG_SLV(
     .i_hv_status2                   (hv_status2                         ),
     .i_hv_status3                   (hv_status3                         ),
     .i_hv_status4                   (hv_status4                         ),
-    .i_hv_bist1                     (8'b0                               ),
-    .i_hv_bist2                     (8'b0                               ),
+    .i_hv_bist1                     (hv_bist1                           ),
+    .i_hv_bist2                     (hv_bist2                           ),
 
     .i_cap_trim_code_read           (cap_trim_code_read                 ),
     .i_cnt_del_read                 (cnt_del_read                       ),
+
+    .o_efuse_wmode                  (o_efuse_wmode                      ),
+    .o_efuse_wr_p                   (o_efuse_wr_p                       ),
+    .o_efuse_rd_p                   (o_efuse_rd_p                       ),
+    .o_efuse_addr                   (o_efuse_addr                       ),
+    .o_efuse_wdata0                 (o_efuse_wdata0                     ),
+    .o_efuse_wdata1                 (o_efuse_wdata1                     ),
+    .o_efuse_wdata2                 (o_efuse_wdata2                     ),
+    .o_efuse_wdata3                 (o_efuse_wdata3                     ),
+    .o_efuse_wdata4                 (o_efuse_wdata4                     ),
+    .o_efuse_wdata5                 (o_efuse_wdata5                     ),
+    .o_efuse_wdata6                 (o_efuse_wdata6                     ),
+    .o_efuse_wdata7                 (o_efuse_wdata7                     ),
+    .o_efuse_wdata8                 (o_efuse_wdata8                     ),
+    .o_efuse_wdata9                 (o_efuse_wdata9                     ),
+    .o_efuse_wdata10                (o_efuse_wdata10                    ),
+    .o_efuse_wdata11                (o_efuse_wdata11                    ),
+    .o_efuse_wdata12                (o_efuse_wdata12                    ),
+    .o_efuse_wdata13                (o_efuse_wdata13                    ),
+    .o_efuse_wdata14                (o_efuse_wdata14                    ),
+    .o_efuse_wdata15                (o_efuse_wdata15                    ),
 
     .i_efuse_op_finish              (efuse_op_finish                    ),
     .i_efuse_reg_update             (efuse_reg_update                   ),
@@ -521,8 +599,8 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
 
     .o_intb_n                   (intb_n                             ),
 
-    .o_efuse_load_req           (efuse_load_req                     ),
-    .i_efuse_load_done          (efuse_load_done                    ), //hardware lanch, indicate efuse have load done.
+    .o_efuse_load_req           (o_efuse_load_req                   ),
+    .i_efuse_load_done          (i_efuse_load_done                  ), //hardware lanch, indicate efuse have load done.
         
     .o_hv_ctrl_cur_st           (hv_ctrl_cur_st                     ),
 
@@ -532,7 +610,7 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
 
 hv_pwm_intb_encode U_HV_PWM_INTB_ENCODE(
     .i_hv_intb_n                (intb_n                             ),
-    .i_hv_pwm_gwave             (                                   ),
+    .i_hv_pwm_gwave             (i_vge_vce                          ),
     .i_wdgintb_en               (1'b1                               ),
     .i_wdgintb_config           (reg_com_config1.wdgintb_config     ),
     .o_hv_pwm_intb_n            (o_pwmn_intb                        ),
@@ -562,18 +640,30 @@ hv_abist U_HV_ABIST(
     .i_hv_adc_data1             (adc_data1                          ),
     .i_hv_adc_data2             (adc_data2                          ),
 
-    .o_bist_hv_ov_status        (                                   ),//1: bist success; 0: bist failure.
-    .o_bist_hv_ot_status        (                                   ),//1: bist success; 0: bist failure.
-    .o_bist_hv_opscod_status    (                                   ),//1: bist success; 0: bist failure.
-    .o_bist_hv_oc_status        (                                   ),//1: bist success; 0: bist failure.
-    .o_bist_hv_sc_status        (                                   ),//1: bist success; 0: bist failure.
-    .o_bist_hv_adc_status       (                                   ),//1: bist success; 0: bist failure.
+    .o_bist_hv_ov_status        (hv_bist1[4]                        ),
+    .o_bist_hv_ot_status        (hv_bist1[5]                        ),
+    .o_bist_hv_opscod_status    (hv_bist1[6]                        ),
+    .o_bist_hv_oc_status        (hv_bist1[7]                        ),
+    .o_bist_hv_sc_status        (hv_bist2[0]                        ),
+    .o_bist_hv_adc_status       (hv_bist2[1]                        ),
 
     .o_lbist_en                 (lbist_en                           ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
 );
+
+assign hv_bist1[0] = 1'b0;
+assign hv_bist1[1] = 1'b0;
+assign hv_bist1[2] = 1'b0;
+assign hv_bist1[3] = 1'b0;
+
+assign hv_bist2[2] = 1'b0;
+assign hv_bist2[3] = 1'b0;
+assign hv_bist2[4] = 1'b0;
+assign hv_bist2[5] = 1'b0;
+assign hv_bist2[6] = 1'b0;
+assign hv_bist2[7] = 1'b0;
     
 hv_lbist U_HV_LBIST(
     .i_bist_en                  (lbist_en                           ),
@@ -604,6 +694,26 @@ hv_adc_sample U_HV_ADC_SAMPLE(
     .i_rst_n                        (i_rst_n                            )
 );
 
+
+assign o_io_efuse_setb    = i_setb             ;
+assign efuse_op_finish    = i_efuse_op_finish  ;
+assign efuse_reg_update   = i_efuse_reg_update ;
+assign efuse_reg_data[0]  = i_efuse_reg_data0  ;
+assign efuse_reg_data[1]  = i_efuse_reg_data1  ;
+assign efuse_reg_data[2]  = i_efuse_reg_data2  ;
+assign efuse_reg_data[3]  = i_efuse_reg_data3  ;
+assign efuse_reg_data[4]  = i_efuse_reg_data4  ;
+assign efuse_reg_data[5]  = i_efuse_reg_data5  ;
+assign efuse_reg_data[6]  = i_efuse_reg_data6  ;
+assign efuse_reg_data[7]  = i_efuse_reg_data7  ;
+assign efuse_reg_data[8]  = i_efuse_reg_data8  ;
+assign efuse_reg_data[9]  = i_efuse_reg_data9  ;
+assign efuse_reg_data[10] = i_efuse_reg_data10 ;
+assign efuse_reg_data[11] = i_efuse_reg_data11 ;
+assign efuse_reg_data[12] = i_efuse_reg_data12 ;
+assign efuse_reg_data[13] = i_efuse_reg_data13 ;
+assign efuse_reg_data[14] = i_efuse_reg_data14 ;
+assign efuse_reg_data[15] = i_efuse_reg_data15 ;
 // synopsys translate_off    
 //==================================
 //assertion
@@ -611,6 +721,16 @@ hv_adc_sample U_HV_ADC_SAMPLE(
 //    
 // synopsys translate_on    
 endmodule
+    
+
+
+
+
+    
+
+
+
+
     
 
 
