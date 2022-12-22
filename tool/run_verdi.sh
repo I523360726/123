@@ -1,6 +1,6 @@
 #!/usr/bin/csh
 
-setenv PRJ_ROOT ~/pwr_prj/pwr_prj-main
+setenv PRJ_ROOT ~/pwr_prj/123-main
 
 verdi +v2k \
       -sverilog \
