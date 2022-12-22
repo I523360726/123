@@ -115,16 +115,23 @@ module dig_hv_top
 //main code
 //==================================
 hv_core U_HV_CORE(
+    .i_s32_16                        (s32_16            ),
     .i_spi_sclk                      (sclk              ),
     .i_spi_csb                       (csb               ),
     .i_spi_mosi                      (mosi              ),
     .o_spi_miso                      (miso              ), 
+ 
+    .i_d2d1rx_dpu_vld                (1'b0              ),
+    .i_d2d1rx_dpu_addr               (8'b0              ),
+    .i_d2d1rx_dpu_data               (8'b0              ),
+    .o_dpu_d2d1rx_rdy                (                  ),
 
     .o_hv_lv_owt_tx                  (d2d1_data         ),
     .i_lv_hv_owt_rx                  (d1d2_data         ),
 
     .i_io_test_mode                  (tm                ),
     .o_fsm_ang_test_en               (vh_pins32         ),
+    .i_setb                          (setb              ),
     .i_hv_vcc_uv                     (uv_vcc            ),
     .i_hv_vcc_ov                     (ov_vcc            ),
     .i_hv_ot                         (otp               ),
@@ -159,6 +166,49 @@ hv_core U_HV_CORE(
 
     .i_ang_dgt_pwm_wv                (1'b0              ), //analog pwm ctrl to digtial pwm ctrl pwm wave
     .i_ang_dgt_pwm_fs                (1'b0              ),
+
+    .o_efuse_wmode                   (                  ),
+    .o_io_efuse_setb                 (                  ),
+    .o_efuse_wr_p                    (                  ),
+    .o_efuse_rd_p                    (                  ),
+    .o_efuse_addr                    (                  ),
+    .o_efuse_wdata0                  (                  ),
+    .o_efuse_wdata1                  (                  ),
+    .o_efuse_wdata2                  (                  ),
+    .o_efuse_wdata3                  (                  ),
+    .o_efuse_wdata4                  (                  ),
+    .o_efuse_wdata5                  (                  ),
+    .o_efuse_wdata6                  (                  ),
+    .o_efuse_wdata7                  (                  ),
+    .o_efuse_wdata8                  (                  ),
+    .o_efuse_wdata9                  (                  ),
+    .o_efuse_wdata10                 (                  ),
+    .o_efuse_wdata11                 (                  ),
+    .o_efuse_wdata12                 (                  ),
+    .o_efuse_wdata13                 (                  ),
+    .o_efuse_wdata14                 (                  ),
+    .o_efuse_wdata15                 (                  ),
+    .i_efuse_op_finish               (1'b0              ),
+    .i_efuse_reg_update              (1'b0              ),
+    .i_efuse_reg_data0               (8'b0              ),
+    .i_efuse_reg_data1               (8'b0              ),
+    .i_efuse_reg_data2               (8'b0              ),
+    .i_efuse_reg_data3               (8'b0              ),
+    .i_efuse_reg_data4               (8'b0              ),
+    .i_efuse_reg_data5               (8'b0              ),
+    .i_efuse_reg_data6               (8'b0              ),
+    .i_efuse_reg_data7               (8'b0              ),
+    .i_efuse_reg_data8               (8'b0              ),
+    .i_efuse_reg_data9               (8'b0              ),
+    .i_efuse_reg_data10              (8'b0              ),
+    .i_efuse_reg_data11              (8'b0              ),
+    .i_efuse_reg_data12              (8'b0              ),
+    .i_efuse_reg_data13              (8'b0              ),
+    .i_efuse_reg_data14              (8'b0              ),
+    .i_efuse_reg_data15              (8'b0              ),
+
+    .o_efuse_load_req                (                  ),
+    .i_efuse_load_done               (1'b0              ),
 
     .o_dgt_ang_pwm_en                (pwm_en            ),
     .o_dgt_ang_fsiso_en              (fsiso_en          ),
@@ -212,6 +262,26 @@ hv_core U_HV_CORE(
 //    
 // synopsys translate_on    
 endmodule
+    
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+
     
     
     
