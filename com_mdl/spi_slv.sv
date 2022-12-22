@@ -11,11 +11,17 @@
 module spi_slv #(
     `include "com_param.svh"
     parameter END_OF_LIST = 1
-)( 
+)(
+    input  logic                    i_s32_16            , 
     input  logic                    i_spi_sclk          ,
     input  logic                    i_spi_csb           ,//low active
     input  logic                    i_spi_mosi          ,
     output logic                    o_spi_miso          ,
+
+    input  logic                    i_d2d1rx_dpu_vld    ,
+    input  logic [7:    0]          i_d2d1rx_dpu_addr   ,
+    input  logic [7:    0]          i_d2d1rx_dpu_data   ,
+    output logic                    o_dpu_d2d1rx_rdy    ,
 
     input  logic                    i_spi_slv_en        ,
 
@@ -123,9 +129,9 @@ end
 
 assign lanch_spi_access = spi_csb_sync & ~spi_csb_sync_ff & i_spi_slv_en;
 
-assign spi_rx_cmd  = spi_rx_bit[SPI_RX_BIT_NUM-1   -: SPI_RX_CMD_BIT_NUM ];
-assign spi_rx_data = spi_rx_bit[SPI_RX_CRC_BIT_NUM +: SPI_RX_DATA_BIT_NUM];
-assign spi_rx_crc  = spi_rx_bit[SPI_RX_CRC_BIT_NUM-1:                   0];
+assign spi_rx_cmd  = i_s32_16 ? spi_rx_bit[SPI_RX_BIT_NUM-1   -: SPI_RX_CMD_BIT_NUM ] : i_d2d1rx_dpu_addr;
+assign spi_rx_data = i_s32_16 ? spi_rx_bit[SPI_RX_CRC_BIT_NUM +: SPI_RX_DATA_BIT_NUM] : i_d2d1rx_dpu_data;
+assign spi_rx_crc  = i_s32_16 ? spi_rx_bit[SPI_RX_CRC_BIT_NUM-1:                   0] : 8'b0             ;
 
 assign rac_rsp_data      = {~i_rac_spi_rack|i_rac_spi_wack, i_rac_spi_addr, i_rac_spi_data};
 assign crc16to8_data_in  = rac_spi_ack ? rac_rsp_data : {spi_rx_cmd, spi_rx_data}          ;
@@ -136,9 +142,11 @@ crc16to8_parallel U_CRC16to8(
 );
 
 //if spi sclk not match 24 cycle multiple or data be corrupted, it will cause crc err.
-assign spi_crc_err = (crc16to8_out != spi_rx_crc) & lanch_spi_access;
+assign spi_crc_err = i_s32_16 ? (crc16to8_out != spi_rx_crc) & lanch_spi_access : 1'b0;
 
 assign rac_spi_ack = i_rac_spi_wack | i_rac_spi_rack;
+
+assign o_dpu_d2d1rx_rdy = i_rac_spi_wack & i_d2d1rx_dpu_vld & ~i_s32_16;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -190,8 +198,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign spi_rac_wen = lanch_spi_access &  spi_rx_cmd[SPI_RX_CMD_BIT_NUM-1] & ~spi_err;
-assign spi_rac_ren = lanch_spi_access & ~spi_rx_cmd[SPI_RX_CMD_BIT_NUM-1] & ~spi_err;
+assign spi_rac_wen = i_s32_16 ? lanch_spi_access &  spi_rx_cmd[SPI_RX_CMD_BIT_NUM-1] & ~spi_err : i_d2d1rx_dpu_vld  ;
+assign spi_rac_ren = i_s32_16 ? lanch_spi_access & ~spi_rx_cmd[SPI_RX_CMD_BIT_NUM-1] & ~spi_err : 1'b0              ;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -221,7 +229,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
     else if(spi_rac_wen) begin
         o_spi_rac_wdata <= spi_rx_data ;
-        o_spi_rac_wcrc  <= spi_rx_crc  ;
+        o_spi_rac_wcrc  <= i_s32_16 ? spi_rx_crc  : crc16to8_out;
     end
     else;
 end
@@ -244,6 +252,9 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
 
 
 
