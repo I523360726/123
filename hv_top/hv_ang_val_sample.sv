@@ -28,8 +28,8 @@ module hv_ang_val_sample #(
 //==================================
 localparam SAMP_CYC_NUM = (2001*CLK_M+999)/1000  ; //after 2us
 localparam CNT_W        = $clog2(SAMP_CYC_NUM+1) ;
-localparam CNT1_EN      = 8'h1000_0000           ;
-localparam CNT2_EN      = 8'h0100_0000           ;
+localparam CNT1_EN      = 8'b1000_0000           ;
+localparam CNT2_EN      = 8'b0100_0000           ;
 //==================================
 //var delcaration
 //==================================
@@ -89,4 +89,5 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
 
