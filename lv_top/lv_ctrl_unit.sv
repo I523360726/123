@@ -40,7 +40,7 @@ module lv_ctrl_unit #(
     output logic                            o_pwm_en            ,
     output logic                            o_fsc_en            ,
     output logic                            o_wdg_scan_en       ,
-    output logic                            o_spi_en            ,
+    output logic                            o_spi_en            ,//when spi_en, support reg read & write.
     output logic                            o_owt_com_en        ,
     output logic                            o_cfg_st_reg_en     ,//when in cfg_st support reg read & write.
     output logic                            o_test_st_reg_en    ,//when in test_st support reg read & write.
@@ -221,15 +221,11 @@ always_comb begin
             else if(i_reg_rst_en) begin
                 lv_ctrl_nxt_st = RST_ST;            
             end
-            else if(~effect_pwm_err & ~i_reg_cfg_en) begin
+            else if(lvhv_err2 & ~effect_pwm_err & ~i_reg_cfg_en) begin
                 lv_ctrl_nxt_st = FAULT_ST;            
             end
-            else if(~effect_pwm_err & i_io_fsenb_n & i_reg_bist_en) begin
+            else if(~effect_pwm_err & i_reg_cfg_en & i_io_fsenb_n & i_reg_bist_en) begin
                 lv_ctrl_nxt_st = BIST_ST;            
-            end
-            else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err | i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0) 
-                    & ~i_io_fsenb_n & ~i_reg_cfg_en) begin
-                lv_ctrl_nxt_st = FAILSAFE_ST;
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err | i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0) 
                     & i_io_fsenb_n & ~i_reg_cfg_en) begin
