@@ -24,6 +24,16 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic [7:    0]                              i_d2d1rx_dpu_data               ,
     output logic                                        o_dpu_d2d1rx_rdy                ,
 
+    output logic                                        o_spi_wr_req                    ,
+    output logic                                        o_spi_rd_req                    ,
+    output logic [REG_AW-1:     0]                      o_spi_addr                      , 
+    output logic [REG_DW-1:     0]                      o_spi_wdata                     ,
+    output logic [REG_CRC_W-1:  0]                      o_spi_wcrc                      , 
+    input  logic                                        i_spi_wack                      ,
+    input  logic                                        i_spi_rack                      ,
+    input  logic [REG_DW-1:     0]                      i_spi_data                      ,
+    input  logic [REG_AW-1:     0]                      i_spi_addr                      , 
+
     output logic                                        o_hv_lv_owt_tx                  ,
     input  logic                                        i_lv_hv_owt_rx                  ,
 
@@ -161,16 +171,17 @@ module hv_core import com_pkg::*; import hv_pkg::*;
 //var delcaration
 //==================================
 logic                                               fsm_spi_slv_en          ;
-logic                                               spi_rac_wr_req          ;
-logic                                               spi_rac_rd_req          ;
-logic [REG_AW-1:            0]                      spi_rac_addr            ; 
-logic [REG_DW-1:            0]                      spi_rac_wdata           ;
-logic [REG_CRC_W-1:         0]                      spi_rac_wcrc            ; 
-logic                                               rac_spi_wack            ;
-logic                                               rac_spi_rack            ;
-logic [REG_DW-1:            0]                      rac_spi_data            ;
-logic [REG_AW-1:            0]                      rac_spi_addr            ; 
 logic                                               spi_reg_slv_err         ; 
+
+logic                                               rac_wr_req              ;
+logic                                               rac_rd_req              ;
+logic [REG_AW-1:            0]                      rac_addr                ; 
+logic [REG_DW-1:            0]                      rac_wdata               ;
+logic [REG_CRC_W-1:         0]                      rac_wcrc                ; 
+logic                                               rac_wack                ;
+logic                                               rac_rack                ;
+logic [REG_DW-1:            0]                      rac_data                ;
+logic [REG_AW-1:            0]                      rac_addr                ;
     
 logic                                               wdg_scan_rac_rd_req     ;
 logic [REG_AW-1:            0]                      wdg_scan_rac_addr       ;
@@ -282,31 +293,57 @@ logic [7:                   0]                      hv_bist2                ;
 //main code
 //==================================
 spi_slv U_SPI_SLV(
-    .i_s32_16                   (i_s32_16                           ),
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
     .i_spi_mosi                 (i_spi_mosi                         ),
     .o_spi_miso                 (o_spi_miso                         ),
 
+    .i_spi_slv_en               (fsm_spi_slv_en                     ),
+
+    .o_spi_rac_wr_req           (o_spi_wr_req                       ),
+    .o_spi_rac_rd_req           (o_spi_rd_req                       ),
+    .o_spi_rac_addr             (o_spi_addr                         ),
+    .o_spi_rac_wdata            (o_spi_wdata                        ),
+    .o_spi_rac_wcrc             (o_spi_wcrc                         ),
+
+    .i_rac_spi_wack             (i_spi_wack                         ),
+    .i_rac_spi_rack             (i_spi_rack                         ),
+    .i_rac_spi_data             (i_spi_data                         ),
+    .i_rac_spi_addr             (i_spi_addr                         ),
+
+    .o_spi_err                  (spi_reg_slv_err                    ),
+
+    .i_clk                      (i_clk                              ),
+    .i_rst_n                    (i_rst_n                            )
+);
+
+hv_spi_owt_acc_arb U_HV_SPI_OWT_ACC_ARB(
+    .i_spi_wr_req               (o_spi_wr_req                       ),
+    .i_spi_rd_req               (o_spi_rd_req                       ),
+    .i_spi_addr                 (o_spi_addr                         ),
+    .i_spi_wdata                (o_spi_wdata                        ),
+    .i_spi_rac_wcrc             (o_spi_wcrc                         ),
+
+    .o_spi_wack                 (i_spi_wack                         ),
+    .o_spi_rack                 (i_spi_rack                         ),
+    .o_spi_data                 (i_spi_data                         ),
+    .o_spi_addr                 (i_spi_addr                         ),
+
     .i_d2d1rx_dpu_vld           (i_d2d1rx_dpu_vld                   ),
     .i_d2d1rx_dpu_addr          (i_d2d1rx_dpu_addr                  ),
     .i_d2d1rx_dpu_data          (i_d2d1rx_dpu_data                  ),
-    .o_dpu_d2d1rx_rdy           (o_dpu_d2d1rx_rdy                   ),    
+    .o_dpu_d2d1rx_rdy           (o_dpu_d2d1rx_rdy                   ),
 
-    .i_spi_slv_en               (fsm_spi_slv_en                     ),
+    .o_rac_wr_req               (rac_wr_req                         ),
+    .o_rac_rd_req               (rac_rd_req                         ),
+    .o_rac_addr                 (rac_addr                           ),
+    .o_rac_wdata                (rac_wdata                          ),
+    .o_rac_wcrc                 (rac_wcrc                           ),
 
-    .o_spi_rac_wr_req           (spi_rac_wr_req                     ),
-    .o_spi_rac_rd_req           (spi_rac_rd_req                     ),
-    .o_spi_rac_addr             (spi_rac_addr                       ),
-    .o_spi_rac_wdata            (spi_rac_wdata                      ),
-    .o_spi_rac_wcrc             (spi_rac_wcrc                       ),
-
-    .i_rac_spi_wack             (rac_spi_wack                       ),
-    .i_rac_spi_rack             (rac_spi_rack                       ),
-    .i_rac_spi_data             (rac_spi_data                       ),
-    .i_rac_spi_addr             (rac_spi_addr                       ),
-
-    .o_spi_err                  (spi_reg_slv_err                    ),
+    .i_rac_wack                 (rac_wack                           ),
+    .i_rac_rack                 (rac_rack                           ),
+    .i_rac_data                 (rac_data                           ),
+    .i_rac_addr                 (rac_addr                           ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
