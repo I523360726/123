@@ -224,7 +224,7 @@ always_comb begin
             else if(~effect_pwm_err & ~i_reg_cfg_en) begin
                 lv_ctrl_nxt_st = FAULT_ST;            
             end
-            else if(~effect_pwm_err & ~i_reg_cfg_en & i_io_fsenb_n & i_reg_bist_en) begin
+            else if(~effect_pwm_err & i_io_fsenb_n & i_reg_bist_en) begin
                 lv_ctrl_nxt_st = BIST_ST;            
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err | i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0) 
