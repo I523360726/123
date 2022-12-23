@@ -201,8 +201,8 @@ logic [REG_DW-1:            0]                      rac_wdata               ;
 logic [REG_CRC_W-1:         0]                      rac_wcrc                ; 
 logic                                               rac_wack                ;
 logic                                               rac_rack                ;
-logic [REG_DW-1:            0]                      rac_data                ;
-logic [REG_AW-1:            0]                      rac_addr                ;
+logic [REG_DW-1:            0]                      rac_ack_data            ;
+logic [REG_AW-1:            0]                      rac_ack_addr            ;
     
 logic                                               wdg_scan_rac_rd_req     ;
 logic [REG_AW-1:            0]                      wdg_scan_rac_addr       ;
@@ -329,8 +329,8 @@ spi_slv U_SPI_SLV(
 
     .i_rac_spi_wack             (spi_wack                           ),
     .i_rac_spi_rack             (spi_rack                           ),
-    .i_rac_spi_data             (spi_data                           ),
-    .i_rac_spi_addr             (spi_addr                           ),
+    .i_rac_spi_data             (spi_ack_data                       ),
+    .i_rac_spi_addr             (spi_ack_addr                       ),
 
     .o_spi_err                  (spi_reg_slv_err                    ),
 
@@ -363,8 +363,8 @@ hv_spi_owt_acc_arb U_HV_SPI_OWT_ACC_ARB(
 
     .i_rac_wack                 (rac_wack                           ),
     .i_rac_rack                 (rac_rack                           ),
-    .i_rac_data                 (rac_data                           ),
-    .i_rac_addr                 (rac_addr                           ),
+    .i_rac_data                 (rac_ack_data                       ),
+    .i_rac_addr                 (rac_ack_addr                       ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
@@ -403,8 +403,8 @@ hv_reg_access_ctrl U_HV_REG_ACCESS_CTRL(
 
     .o_rac_spi_wack             (rac_wack                           ),
     .o_rac_spi_rack             (rac_rack                           ),
-    .o_rac_spi_data             (rac_data                           ),
-    .o_rac_spi_addr             (rac_addr                           ),
+    .o_rac_spi_data             (rac_ack_data                       ),
+    .o_rac_spi_addr             (rac_ack_addr                       ),
 
     .i_owt_rx_rac_vld           (owt_rx_rac_vld                     ),
     .i_owt_rx_rac_cmd           (owt_rx_rac_cmd                     ),

@@ -53,7 +53,7 @@ logic           cur_acc_flag        ; //0: owt; 1: spi
 logic           spi_req_ing         ;
 logic           owt_req_ing         ;
 logic [15:  0]  crc16to8_data_in    ;
-logic [8:   0]  crc16to8_out        ;
+logic [7:   0]  crc16to8_out        ;
 //==================================
 //main code
 //==================================
