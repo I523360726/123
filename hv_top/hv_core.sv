@@ -24,15 +24,15 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic [7:    0]                              i_d2d1rx_dpu_data               ,
     output logic                                        o_dpu_d2d1rx_rdy                ,
 
-    output logic                                        o_spi_wr_req                    ,
-    output logic                                        o_spi_rd_req                    ,
-    output logic [REG_AW-1:     0]                      o_spi_addr                      , 
-    output logic [REG_DW-1:     0]                      o_spi_wdata                     ,
-    output logic [REG_CRC_W-1:  0]                      o_spi_wcrc                      , 
-    input  logic                                        i_spi_wack                      ,
-    input  logic                                        i_spi_rack                      ,
-    input  logic [REG_DW-1:     0]                      i_spi_data                      ,
-    input  logic [REG_AW-1:     0]                      i_spi_addr                      , 
+    output logic                                        o_spi_s16pin_wr_req             ,
+    output logic                                        o_spi_s16pin_rd_req             ,
+    output logic [REG_AW-1:     0]                      o_spi_s16pin_addr               , 
+    output logic [REG_DW-1:     0]                      o_spi_s16pin_wdata              ,
+    output logic [REG_CRC_W-1:  0]                      o_spi_s16pin_wcrc               , 
+    input  logic                                        i_s16pin_spi_wack               ,
+    input  logic                                        i_s16pin_spi_rack               ,
+    input  logic [REG_DW-1:     0]                      i_s16pin_spi_data               ,
+    input  logic [REG_AW-1:     0]                      i_s16pin_spi_addr               , 
 
     output logic                                        o_hv_lv_owt_tx                  ,
     input  logic                                        i_lv_hv_owt_rx                  ,
@@ -173,6 +173,27 @@ module hv_core import com_pkg::*; import hv_pkg::*;
 logic                                               fsm_spi_slv_en          ;
 logic                                               spi_reg_slv_err         ; 
 
+logic                                               spi_wr_req              ;
+logic                                               spi_rd_req              ;
+logic [REG_AW-1:            0]                      spi_addr                ; 
+logic [REG_DW-1:            0]                      spi_wdata               ;
+logic [REG_CRC_W-1:         0]                      spi_wcrc                ;
+
+logic                                               spi_wack                ;
+logic                                               spi_rack                ;
+logic [REG_DW-1:            0]                      spi_ack_data            ;
+logic [REG_AW-1:            0]                      spi_ack_addr            ;
+
+logic                                               spi_s32pin_wr_req       ;
+logic                                               spi_s32pin_rd_req       ;
+logic [REG_AW-1:            0]                      spi_s32pin_addr         ; 
+logic [REG_DW-1:            0]                      spi_s32pin_wdata        ;
+logic [REG_CRC_W-1:         0]                      spi_s32pin_wcrc         ; 
+logic                                               s32pin_spi_wack         ;
+logic                                               s32pin_spi_rack         ;
+logic [REG_DW-1:            0]                      s32pin_spi_data         ;
+logic [REG_AW-1:            0]                      s32pin_spi_addr         ;
+
 logic                                               rac_wr_req              ;
 logic                                               rac_rd_req              ;
 logic [REG_AW-1:            0]                      rac_addr                ; 
@@ -300,16 +321,16 @@ spi_slv U_SPI_SLV(
 
     .i_spi_slv_en               (fsm_spi_slv_en                     ),
 
-    .o_spi_rac_wr_req           (o_spi_wr_req                       ),
-    .o_spi_rac_rd_req           (o_spi_rd_req                       ),
-    .o_spi_rac_addr             (o_spi_addr                         ),
-    .o_spi_rac_wdata            (o_spi_wdata                        ),
-    .o_spi_rac_wcrc             (o_spi_wcrc                         ),
+    .o_spi_rac_wr_req           (spi_wr_req                         ),
+    .o_spi_rac_rd_req           (spi_rd_req                         ),
+    .o_spi_rac_addr             (spi_addr                           ),
+    .o_spi_rac_wdata            (spi_wdata                          ),
+    .o_spi_rac_wcrc             (spi_wcrc                           ),
 
-    .i_rac_spi_wack             (i_spi_wack                         ),
-    .i_rac_spi_rack             (i_spi_rack                         ),
-    .i_rac_spi_data             (i_spi_data                         ),
-    .i_rac_spi_addr             (i_spi_addr                         ),
+    .i_rac_spi_wack             (spi_wack                           ),
+    .i_rac_spi_rack             (spi_rack                           ),
+    .i_rac_spi_data             (spi_data                           ),
+    .i_rac_spi_addr             (spi_addr                           ),
 
     .o_spi_err                  (spi_reg_slv_err                    ),
 
@@ -318,16 +339,16 @@ spi_slv U_SPI_SLV(
 );
 
 hv_spi_owt_acc_arb U_HV_SPI_OWT_ACC_ARB(
-    .i_spi_wr_req               (o_spi_wr_req                       ),
-    .i_spi_rd_req               (o_spi_rd_req                       ),
-    .i_spi_addr                 (o_spi_addr                         ),
-    .i_spi_wdata                (o_spi_wdata                        ),
-    .i_spi_rac_wcrc             (o_spi_wcrc                         ),
+    .i_spi_wr_req               (spi_s32pin_wr_req                  ),
+    .i_spi_rd_req               (spi_s32pin_rd_req                  ),
+    .i_spi_addr                 (spi_s32pin_addr                    ),
+    .i_spi_wdata                (spi_s32pin_wdata                   ),
+    .i_spi_wcrc                 (spi_s32pin_wcrc                    ),
 
-    .o_spi_wack                 (i_spi_wack                         ),
-    .o_spi_rack                 (i_spi_rack                         ),
-    .o_spi_data                 (i_spi_data                         ),
-    .o_spi_addr                 (i_spi_addr                         ),
+    .o_spi_wack                 (s32pin_spi_wack                    ),
+    .o_spi_rack                 (s32pin_spi_rack                    ),
+    .o_spi_data                 (s32pin_spi_data                    ),
+    .o_spi_addr                 (s32pin_spi_addr                    ),
 
     .i_d2d1rx_dpu_vld           (i_d2d1rx_dpu_vld                   ),
     .i_d2d1rx_dpu_addr          (i_d2d1rx_dpu_addr                  ),
@@ -374,16 +395,16 @@ hv_reg_access_ctrl U_HV_REG_ACCESS_CTRL(
     .o_rac_wdg_scan_data        (rac_wdg_scan_data                  ),
     .o_rac_wdg_scan_crc         (rac_wdg_scan_crc                   ),
 
-    .i_spi_rac_wr_req           (spi_rac_wr_req                     ),
-    .i_spi_rac_rd_req           (spi_rac_rd_req                     ),
-    .i_spi_rac_addr             (spi_rac_addr                       ),
-    .i_spi_rac_wdata            (spi_rac_wdata                      ),
-    .i_spi_rac_wcrc             (spi_rac_wcrc                       ),
+    .i_spi_rac_wr_req           (rac_wr_req                         ),
+    .i_spi_rac_rd_req           (rac_rd_req                         ),
+    .i_spi_rac_addr             (rac_addr                           ),
+    .i_spi_rac_wdata            (rac_wdata                          ),
+    .i_spi_rac_wcrc             (rac_wcrc                           ),
 
-    .o_rac_spi_wack             (rac_spi_wack                       ),
-    .o_rac_spi_rack             (rac_spi_rack                       ),
-    .o_rac_spi_data             (rac_spi_data                       ),
-    .o_rac_spi_addr             (rac_spi_addr                       ),
+    .o_rac_spi_wack             (rac_wack                           ),
+    .o_rac_spi_rack             (rac_rack                           ),
+    .o_rac_spi_data             (rac_data                           ),
+    .o_rac_spi_addr             (rac_addr                           ),
 
     .i_owt_rx_rac_vld           (owt_rx_rac_vld                     ),
     .i_owt_rx_rac_cmd           (owt_rx_rac_cmd                     ),
@@ -751,6 +772,24 @@ assign efuse_reg_data[12] = i_efuse_reg_data12 ;
 assign efuse_reg_data[13] = i_efuse_reg_data13 ;
 assign efuse_reg_data[14] = i_efuse_reg_data14 ;
 assign efuse_reg_data[15] = i_efuse_reg_data15 ;
+
+
+assign o_spi_s16pin_wr_req = ~i_s32_16 ? spi_wr_req : 1'b0 ;
+assign o_spi_s16pin_rd_req = ~i_s32_16 ? spi_rd_req : 1'b0 ;
+assign o_spi_s16pin_addr   = ~i_s32_16 ? spi_addr   : 7'b0 ; 
+assign o_spi_s16pin_wdata  = ~i_s32_16 ? spi_wdata  : 8'b0 ;
+assign o_spi_s16pin_wcrc   = ~i_s32_16 ? spi_wcrc   : 8'b0 ;
+
+assign spi_s32pin_wr_req   =  i_s32_16 ? spi_wr_req : 1'b0 ;
+assign spi_s32pin_rd_req   =  i_s32_16 ? spi_rd_req : 1'b0 ;
+assign spi_s32pin_addr     =  i_s32_16 ? spi_addr   : 7'b0 ; 
+assign spi_s32pin_wdata    =  i_s32_16 ? spi_wdata  : 8'b0 ;
+assign spi_s32pin_wcrc     =  i_s32_16 ? spi_wcrc   : 8'b0 ;
+
+assign spi_wack            = ~i_s32_16 ? i_s16pin_spi_wack : s32pin_spi_wack ;
+assign spi_rack            = ~i_s32_16 ? i_s16pin_spi_rack : s32pin_spi_rack ;
+assign spi_ack_data        = ~i_s32_16 ? i_s16pin_spi_data : s32pin_spi_data ;
+assign spi_ack_addr        = ~i_s32_16 ? i_s16pin_spi_addr : s32pin_spi_addr ;
 // synopsys translate_off    
 //==================================
 //assertion

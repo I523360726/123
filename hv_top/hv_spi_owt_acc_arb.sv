@@ -16,7 +16,7 @@ module hv_spi_owt_acc_arb #(
     input  logic                    i_spi_rd_req        ,
     input  logic [REG_AW-1:     0]  i_spi_addr          ,
     input  logic [REG_DW-1:     0]  i_spi_wdata         ,
-    input  logic [REG_CRC_W-1:  0]  i_spi_rac_wcrc      ,
+    input  logic [REG_CRC_W-1:  0]  i_spi_wcrc          ,
 
     output logic                    o_spi_wack          ,
     output logic                    o_spi_rack          ,
