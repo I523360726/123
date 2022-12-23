@@ -223,16 +223,10 @@ logic                                               lv_bist_fail            ;
 //main code
 //==================================
 spi_slv U_SPI_SLV(
-    .i_s32_16                   (1'b1                               ),
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
     .i_spi_mosi                 (i_spi_mosi                         ),
     .o_spi_miso                 (o_spi_miso                         ),
-
-    .i_d2d1rx_dpu_vld           (1'b0                               ),
-    .i_d2d1rx_dpu_addr          (8'b0                               ),
-    .i_d2d1rx_dpu_data          (8'b0                               ),
-    .o_dpu_d2d1rx_rdy           (                                   ),   
 
     .i_spi_slv_en               (fsm_spi_slv_en                     ),
 
