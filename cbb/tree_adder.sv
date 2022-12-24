@@ -23,7 +23,7 @@ module tree_adder #(
     output logic [ODW-1:      0]           o_add_reslt  ,
     input  logic                           i_clk        ,
     input  logic                           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================

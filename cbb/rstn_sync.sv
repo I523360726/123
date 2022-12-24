@@ -14,7 +14,7 @@ module rstn_sync #(
     input  logic           i_clk        ,
     input  logic           i_asyn_rst_n ,
     output logic           o_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -28,11 +28,11 @@ logic [RST_SYNC_LVL-1: 0] rst_n;
 //==================================  
 always_ff@(posedge i_clk or negedge i_asyn_rst_n) begin
     if(~i_asyn_rst_n) begin
-	    rst_n[RST_SYNC_LVL-1: 0] <= {RST_SYNC_LVL{1'b0}};
-	end
-  	else begin
-	    rst_n[RST_SYNC_LVL-1: 0] <= {rst_n[RST_SYNC_LVL-2: 0], 1'b1};
-	end
+        rst_n[RST_SYNC_LVL-1: 0] <= {RST_SYNC_LVL{1'b0}};
+    end
+    else begin
+        rst_n[RST_SYNC_LVL-1: 0] <= {rst_n[RST_SYNC_LVL-2: 0], 1'b1};
+    end
 end
 
 assign o_rst_n = rst_n[RST_SYNC_LVL-1];    

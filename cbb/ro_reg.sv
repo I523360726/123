@@ -26,7 +26,7 @@ module ro_reg #(
     output logic [DW-1: 0] o_rdata              ,
     input  logic           i_clk                ,
     input  logic           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================

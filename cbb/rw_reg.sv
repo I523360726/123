@@ -37,7 +37,7 @@ module rw_reg #(
     output logic [CRC_W-1:  0]  o_rcrc                  ,	
     input  logic                i_clk	                ,
     input  logic                i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -59,14 +59,14 @@ assign ren = i_ren & hit & ((i_test_st_reg_en & SUPPORT_TEST_MODE_RD) | (i_cfg_s
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_reg_data <= DEFAULT_VAL;
-	    crc_data   <= {CRC_W{1'b0}};
+        crc_data   <= {CRC_W{1'b0}};
     end
     else begin
         o_reg_data <= wen ? i_wdata : o_reg_data;
-	    crc_data   <= wen ? i_crc_data : crc_data;
+        crc_data   <= wen ? i_crc_data : crc_data;
     end
 end
-	
+
     
 assign o_rdata = ren ? o_reg_data : {DW{1'b0}};
 assign o_rcrc  = ren ? crc_data   : {CRC_W{1'b0}};

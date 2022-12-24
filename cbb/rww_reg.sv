@@ -36,7 +36,7 @@ module rww_reg #(
     input  logic [DW-1: 0] i_lgc_wdata          ,
     input  logic           i_clk                ,
     input  logic           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================

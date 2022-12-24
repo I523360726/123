@@ -17,7 +17,7 @@ module crc8_serial #(
     output logic [7:         0] o_vld_crc               ,
     input  logic                i_clk	                ,
     input  logic                i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -34,7 +34,7 @@ assign crc_old  = (i_vld & i_new_calc) ? 8'hff : crc_out;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    crc_out <= 8'hff;
+        crc_out <= 8'hff;
     end
     else begin
         crc_out <= i_vld ? crc8_new(crc_old, i_data) : crc_out; 
@@ -44,7 +44,7 @@ end
 assign o_vld_crc = crc_out;
 
 // LFSR for CRC8
- function [7:0] crc8_new; 
+function [7:0] crc8_new; 
     input [7:0] crc8_old; 
     input       data    ; 
     begin

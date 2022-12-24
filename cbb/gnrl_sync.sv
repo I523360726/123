@@ -18,7 +18,7 @@ module gnrl_sync #(
     output logic [DW-1:     0]  o_data              ,
     input  logic                i_clk	            ,
     input  logic                i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -39,7 +39,7 @@ for(genvar i=0; i<SYNC_PIPE_NUM; i=i+1) begin: PIPE_DATA_BLK
             data[i+1] <= DEF_VAL;
         end
         else begin
-	        data[i+1] <= data[i];
+            data[i+1] <= data[i];
         end
     end
 end

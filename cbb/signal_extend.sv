@@ -20,7 +20,7 @@ module signal_extend #(
     output logic           o_done       ,
     input  logic           i_clk        ,
     input  logic           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -36,9 +36,9 @@ logic               vld_data_lock   ;
 //==================================
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    vld_lock        <= 1'b0;
+        vld_lock        <= 1'b0;
         vld_data_lock   <= 1'b0;
-	end
+    end
   	else if(i_vld) begin
         vld_lock        <= 1'b1;
         vld_data_lock   <= i_vld_data;
@@ -52,21 +52,23 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    cnt <= CNT_W'(0);
-	end
-  	else if(i_vld | vld_lock) begin
+        cnt <= CNT_W'(0);
+    end
+    else if(i_vld | vld_lock) begin
         cnt <= (cnt==(EXTEND_CYC_NUM-1)) ? CNT_W'(0) : (cnt+1'b1);
     end
-    else;
+    else begin
+        cnt <= CNT_W'(0);
+    end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    o_vld        <= 1'b0;
+        o_vld        <= 1'b0;
         o_vld_data   <= 1'b0;
         o_done       <= 1'b0;
-	end
-  	else begin
+    end
+    else begin
         o_vld        <= i_vld | vld_lock;
         o_vld_data   <= (i_vld & i_vld_data) | (vld_lock & vld_data_lock);
         o_done       <= (cnt==(EXTEND_CYC_NUM-1));    

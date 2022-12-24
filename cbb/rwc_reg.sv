@@ -36,7 +36,7 @@ module rwc_reg #(
     input  logic [DW-1: 0] i_lgc_wdata          ,
     input  logic           i_clk                ,
     input  logic           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -59,11 +59,11 @@ generate
 for(genvar i=0; i<DW; i=i+1) begin: REG_DATA_BLK
     always_ff@(posedge i_clk or negedge i_rst_n) begin
         if(~i_rst_n) begin
-	        reg_data[i] <= DEFAULT_VAL[i];
-	    end
-  	    else begin
-	        reg_data[i] <= (i_lgc_wen[i] & i_lgc_wdata[i]) ? 1'b1 : ((wen & i_wdata[i]) ? 1'b0 : reg_data[i]);
-	    end
+            reg_data[i] <= DEFAULT_VAL[i];
+        end
+        else begin
+            reg_data[i] <= (i_lgc_wen[i] & i_lgc_wdata[i]) ? 1'b1 : ((wen & i_wdata[i]) ? 1'b0 : reg_data[i]);
+        end
     end
 end
 endgenerate

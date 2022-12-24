@@ -14,7 +14,7 @@ module rstn_merge #(
     input  logic           i_hrst_n ,
     input  logic           i_srst_n ,
     output logic           o_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================

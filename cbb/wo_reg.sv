@@ -30,7 +30,7 @@ module wo_reg #(
     output logic [DW-1: 0] o_reg_data           ,
     input  logic           i_clk                ,
     input  logic           i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -46,15 +46,16 @@ logic [DW-1: 0] reg_data;
 //main code
 //==================================
 assign hit = (i_addr==REG_ADDR);
-assign wen = i_wen & hit & ((i_test_st_reg_en & SUPPORT_TEST_MODE_WR) | (i_cfg_st_reg_en & SUPPORT_CFG_MODE_WR) | (i_spi_ctrl_reg_en & SUPPORT_SPI_EN_WR) | (i_efuse_ctrl_reg_en & SUPPORT_EFUSE_WR));
+assign wen = i_wen & hit & ((i_test_st_reg_en & SUPPORT_TEST_MODE_WR) | (i_cfg_st_reg_en & SUPPORT_CFG_MODE_WR) | 
+                            (i_spi_ctrl_reg_en & SUPPORT_SPI_EN_WR) | (i_efuse_ctrl_reg_en & SUPPORT_EFUSE_WR));
   
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    reg_data <= DEFAULT_VAL;
-	end
-  	else begin
-	    reg_data <= wen ? i_wdata : DEFAULT_VAL;
-	end
+        reg_data <= DEFAULT_VAL;
+    end
+    else begin
+        reg_data <= wen ? i_wdata : DEFAULT_VAL;
+    end
 end
 
 assign o_reg_data = reg_data    ;    
