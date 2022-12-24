@@ -23,6 +23,7 @@ module lv_ctrl_unit #(
     input  logic                            i_reg_wdg_tmo_err   ,//tmo = timeout
     input  logic                            i_reg_lv_pwm_dterr  ,
     input  logic                            i_reg_lv_pwm_mmerr  ,
+    input  logic                            i_reg_bist_fail     ,
     input  logic                            i_reg_lv_vsup_uverr ,
     input  logic                            i_reg_lv_vsup_overr ,
     input  logic                            i_reg_hv_vcc_uverr  ,
@@ -61,6 +62,8 @@ module lv_ctrl_unit #(
     input  logic                            i_owt_rx_ack        ,
 
     output logic [CTRL_FSM_ST_W-1:      0]  o_lv_ctrl_cur_st    ,
+
+    input  logic                            i_lv_bist_done      ,
     
     input  logic                            i_clk               ,
     input  logic                            i_rst_n
@@ -80,6 +83,7 @@ logic [CTRL_FSM_ST_W-1:         0]  lv_ctrl_nxt_st      ;
 logic                               effect_pwm_err      ;
 logic                               fault_st_pwm_en     ;
 logic                               cfg_st_intb_n_en    ;
+logic                               bist_st_intb_n_en   ;
 logic                               lv_intb_n           ;
 logic                               lv_pwm_mmerr        ;
 //==================================
@@ -99,8 +103,10 @@ assign effect_pwm_err = lvhv_err1 | i_reg_owt_com_err | i_reg_wdg_tmo_err;
 
 assign fault_st_pwm_en = (lv_ctrl_nxt_st==FAULT_ST) & ~effect_pwm_err;
 
-assign cfg_st_intb_n_en = (lv_ctrl_nxt_st==CFG_ST) & (i_reg_owt_com_err | i_reg_wdg_tmo_err | 
-                           i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0);                         
+assign cfg_st_intb_n_en = (lv_ctrl_nxt_st==CFG_ST) & (i_reg_bist_fail | i_reg_owt_com_err | i_reg_wdg_tmo_err | 
+                           i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0);    
+
+assign bist_st_intb_n_en = (lv_ctrl_nxt_st==BIST_ST) & ~i_lv_bist_done;                     
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -382,7 +388,7 @@ end
 
 always_comb begin
     if((lv_ctrl_nxt_st==PWR_DWN_ST) || (lv_ctrl_nxt_st==WAIT_ST)  || (lv_ctrl_nxt_st==FAULT_ST) ||
-            cfg_st_intb_n_en || (lv_ctrl_nxt_st==RST_ST)) begin
+            cfg_st_intb_n_en || (lv_ctrl_nxt_st==RST_ST) || bist_st_intb_n_en) begin
         lv_intb_n = 1'b0;
     end
     else begin

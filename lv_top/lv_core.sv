@@ -180,7 +180,8 @@ logic [REG_DW-1:             0]                     lv_status1              ;
 logic [REG_DW-1:             0]                     lv_status2              ;
 logic [REG_DW-1:             0]                     lv_status3              ;
 logic [REG_DW-1:             0]                     lv_status4              ;
-
+logic [REG_DW-1:             0]                     lv_bist1                ;
+logic [REG_DW-1:             0]                     lv_bist2                ;
 
 str_reg_efuse_config                                reg_die2_efuse_config   ;
 str_reg_efuse_status                                reg_die2_efuse_status   ;
@@ -217,8 +218,11 @@ logic                                               bist_en                 ;
 
 logic                                               lbist_en                ;
 logic                                               lv_bist_fail            ;
+logic                                               lv_bist_done            ;
+logic                                               hv_intb_n               ;
 
-
+logic                                               hv_intb0_pulse          ;
+logic                                               hv_intb1_pulse          ;
 //==================================        
 //main code
 //==================================
@@ -399,6 +403,11 @@ lv_analog_int_proc U_LV_ANALOG_INT_PROC(
     .i_rst_n                    (i_rst_n                                )
 );
 
+assign lv_bist1[7: 1] = 6'b0;
+assign lv_bist2[7: 3] = 4'b0;
+
+assign lv_bist_fail = |(lv_bist1 | lv_bist2);
+
 assign lv_status1 = {lv_bist_fail, 1'b0, lv_pwm_mmerr, lv_pwm_dterr,
                      wdg_owt_reg_slv_tmoerr, owt_rx_reg_slv_owtcomerr, wdg_scan_reg_slv_crcerr, spi_reg_slv_err};
 
@@ -425,8 +434,8 @@ lv_reg_slv U_LV_REG_SLV(
     .i_lv_status2               (lv_status2                         ),
     .i_lv_status3               (lv_status3                         ),
     .i_lv_status4               (lv_status4                         ),
-    .i_lv_bist1                 (8'b0                               ),
-    .i_lv_bist2                 (8'b0                               ),
+    .i_lv_bist1                 (lv_bist1                           ),
+    .i_lv_bist2                 (lv_bist2                           ),
 
     .i_reg_die2_efuse_config    (reg_die2_efuse_config              ),
     .i_reg_die2_efuse_status    (reg_die2_efuse_status              ),
@@ -503,6 +512,7 @@ lv_ctrl_unit U_LV_CTRL_UNIT(
     .i_reg_wdg_tmo_err          (reg_status1[3]                     ),//tmo = timeout
     .i_reg_lv_pwm_dterr         (reg_status1[4]                     ),
     .i_reg_lv_pwm_mmerr         (reg_status1[5]                     ),
+    .i_reg_bist_fail            (reg_status1[7]                     ),
     .i_reg_lv_vsup_uverr        (reg_status2[0]                     ),
     .i_reg_lv_vsup_overr        (reg_status2[1]                     ),
     .i_reg_hv_vcc_uverr         (reg_status2[2]                     ),
@@ -541,6 +551,7 @@ lv_ctrl_unit U_LV_CTRL_UNIT(
     .i_owt_rx_ack               (owt_rx_ack                         ),
     
     .o_lv_ctrl_cur_st           (lv_ctrl_cur_st                     ),
+    .i_lv_bist_done             (lv_bist_done                       ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
@@ -550,6 +561,8 @@ lv_pwm_intb_decode U_LV_PWM_INTB_DECODE(
     .i_hv_pwm_intb_n            (i_hv_pwm_intb_n                    ),
     .o_lv_pwm_gwave             (                                   ),
     .o_hv_intb_n                (hv_intb_n                          ),
+    .o_hv_intb0_pulse           (hv_intb0_pulse                     ),
+    .o_hv_intb1_pulse           (hv_intb1_pulse                     ),
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
 );
@@ -558,7 +571,7 @@ lv_abist U_LV_ABIST(
     .i_bist_en                  (bist_en                            ),     
     .i_lv_vsup_ov               (i_lv_vsup_ov                       ),
     .o_lbist_en                 (lbist_en                           ),
-    .o_lv_abist_fail            (                                   ),
+    .o_lv_abist_rult            (lv_bist1[0]                        ),
     .o_bistlv_ov                (o_bistlv_ov                        ),
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
@@ -569,10 +582,18 @@ lv_lbist U_LV_LBIST(
     .o_bist_wdg_owt_tx_req      (bist_wdg_owt_tx_req                ),
     .i_owt_rx_ack               (owt_rx_ack                         ),
     .i_owt_rx_status            (owt_rx_status                      ),
+    .o_owt_bist_rutl            (lv_bist2[0]                        ),
+
     .o_bist_scan_reg_req        (bist_scan_reg_req                  ),
     .i_scan_reg_bist_ack        (scan_reg_bist_ack                  ),
     .i_scan_reg_bist_err        (scan_reg_bist_err                  ),
-    .o_lv_bist_fail             (lv_bist_fail                       ),
+    .o_scan_reg_bist_rult       (lv_bist2[1]                        ),
+
+    .i_hv_intb0_pulse           (hv_intb0_pulse                     ),
+    .i_hv_intb1_pulse           (hv_intb1_pulse                     ),
+    .o_hv_intb_bist_rult        (lv_bist2[2]                        ),
+
+    .o_lv_bist_done             (lv_bist_done                       ),
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
 );

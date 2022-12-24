@@ -24,6 +24,10 @@ module lv_lbist #(
     input  logic           i_scan_reg_bist_err      ,
     output logic           o_scan_reg_bist_rult     ,
 
+    input  logic           i_hv_intb0_pulse         ,
+    input  logic           i_hv_intb1_pulse         ,
+    output logic           o_hv_intb_bist_rult      ,
+
     output logic           o_lv_bist_done           ,
 
     input  logic           i_clk                    ,
@@ -62,7 +66,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else;
     end
     else begin
-        can_cnt <= SCAN_CNT_W'(0);    
+        scan_cnt <= SCAN_CNT_W'(0);    
     end
 end
 
@@ -167,6 +171,21 @@ assign o_owt_bist_rutl = ~owt_bist_fail;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        o_hv_intb_bist_rult <= 1'b1;
+    end
+    else if(i_bist_en & (bist_tmo_cnt<BIST_TMO_TH)) begin
+        if(i_hv_intb0_pulse | i_hv_intb1_pulse) begin
+            o_hv_intb_bist_rult <= 1'b0;
+        end
+        else begin
+            o_hv_intb_bist_rult <= 1'b1;            
+        end
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         o_lv_bist_done <= 1'b0;
     end
     else if(i_bist_en) begin
@@ -188,5 +207,4 @@ end
 //    
 // synopsys translate_on    
 endmodule
-
 

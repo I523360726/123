@@ -17,6 +17,9 @@ module lv_pwm_intb_decode #(
     output logic           o_lv_pwm_gwave                   ,
     output logic           o_hv_intb_n                      ,
 
+    output logic           o_hv_intb0_pulse                 ,
+    output logic           o_hv_intb1_pulse                 ,
+
     input  logic           i_clk                            ,
     input  logic           i_rst_n
  );
