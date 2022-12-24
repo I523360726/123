@@ -94,7 +94,3 @@ endgenerate
 // synopsys translate_on    
 endmodule
 
-
-
-
-

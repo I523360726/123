@@ -34,7 +34,7 @@ module spi_slv #(
 
     input  logic                    i_clk               ,
     input  logic                    i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
