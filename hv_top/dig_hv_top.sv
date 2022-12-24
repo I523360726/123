@@ -62,6 +62,8 @@ module dig_hv_top
    input  logic [2:     0]                             adc_dvmr                         ,
    output logic                                        dvm_rst                          ,
 
+   output logic                                        adc1_en                          ,
+   output logic                                        adc2_en                          ,
 
    output logic [7:     0]                             iso_bgr_trim                     ,
    output logic [7:     0]                             iso_con_ibias_trim               ,
@@ -176,6 +178,9 @@ hv_core U_HV_CORE(
 
     .i_ang_dgt_pwm_wv                (1'b0              ), //analog pwm ctrl to digtial pwm ctrl pwm wave
     .i_ang_dgt_pwm_fs                (1'b0              ),
+
+    .o_adc1_en                       (adc1_en           ),
+    .o_adc2_en                       (adc2_en           ),
 
     .o_efuse_wmode                   (                  ),
     .o_io_efuse_setb                 (                  ),

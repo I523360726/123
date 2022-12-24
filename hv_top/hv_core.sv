@@ -122,6 +122,9 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     output logic                                        o_dgt_ang_pwm_en                ,
     output logic                                        o_dgt_ang_fsiso_en              ,
     output logic                                        o_pwmn_intb                     ,
+
+    output logic                                        o_adc1_en                       ,
+    output logic                                        o_adc2_en                       ,
   
     output str_reg_iso_bgr_trim                         o_reg_iso_bgr_trim              ,
     output str_reg_iso_con_ibias_trim                   o_reg_iso_con_ibias_trim        ,
@@ -620,6 +623,9 @@ hv_reg_slv U_HV_REG_SLV(
     .i_hrst_n                       (i_rst_n                            ),
     .o_rst_n                        (                                   )
 );
+
+assign o_adc1_en = reg_mode.adc1_en;
+assign o_adc2_en = reg_mode.adc2_en;
         
 hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_pwr_on                   (1'b1                               ),
