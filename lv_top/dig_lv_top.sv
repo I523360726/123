@@ -60,7 +60,7 @@ module dig_lv_top
    output logic                                        vl_pins16                        , 
 
    input  logic [1:    0]                              set_jdg                          ,
-   input  logic [2:    0]                              adc_dmvt                         ,
+   input  logic [2:    0]                              adc_dmvf                         ,
    input  logic [2:    0]                              adc_sic                          ,
    input  logic [1:    0]                              adc_vth                          ,
    input  logic [2:    0]                              adc_soc                          , 
