@@ -310,6 +310,8 @@ logic [5:                   0]                      cnt_del_read            ;
 
 logic [7:                   0]                      hv_bist1                ;
 logic [7:                   0]                      hv_bist2                ;
+
+logic                                               hv_bist_done            ;
 //==================================        
 //main code
 //==================================
@@ -488,7 +490,9 @@ hv_analog_int_proc U_HV_ANALOG_INT_PRO(
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
 );
-    
+
+assign hv_bist_fail = |(hv_bist1 | hv_bist2);    
+
 assign hv_status1 = {hv_bist_fail, 1'b0, 1'b0, 1'b0,
                      wdg_owt_reg_slv_tmoerr, owt_rx_reg_slv_owtcomerr, wdg_scan_reg_slv_crcerr, spi_reg_slv_err};
     
@@ -628,7 +632,7 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_reg_scan_crc_err         (reg_status1[1]                     ),    
     .i_reg_owt_com_err          (reg_status1[2]                     ),
     .i_reg_wdg_tmo_err          (reg_status1[3]                     ),//tmo = timeout
-    .i_bist_fail_n              (reg_status1[7]                     ),
+    .i_reg_bist_fail            (reg_status1[7]                     ),
     .i_reg_hv_vcc_uverr         (reg_status2[2]                     ),
     .i_reg_hv_vcc_overr         (reg_status2[3]                     ),
     .i_reg_hv_ot_err            (reg_status2[4]                     ),
@@ -661,6 +665,7 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_efuse_load_done          (i_efuse_load_done                  ), //hardware lanch, indicate efuse have load done.
         
     .o_hv_ctrl_cur_st           (hv_ctrl_cur_st                     ),
+    .i_hv_bist_done             (hv_bist_done                       ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
@@ -698,12 +703,12 @@ hv_abist U_HV_ABIST(
     .i_hv_adc_data1             (adc_data1                          ),
     .i_hv_adc_data2             (adc_data2                          ),
 
-    .o_bist_hv_ov_status        (hv_bist1[4]                        ),
-    .o_bist_hv_ot_status        (hv_bist1[5]                        ),
-    .o_bist_hv_opscod_status    (hv_bist1[6]                        ),
-    .o_bist_hv_oc_status        (hv_bist1[7]                        ),
-    .o_bist_hv_sc_status        (hv_bist2[0]                        ),
-    .o_bist_hv_adc_status       (hv_bist2[1]                        ),
+    .o_bist_hv_ov_status        (hv_bist1[1]                        ),
+    .o_bist_hv_ot_status        (hv_bist1[2]                        ),
+    .o_bist_hv_opscod_status    (hv_bist1[3]                        ),
+    .o_bist_hv_oc_status        (hv_bist1[4]                        ),
+    .o_bist_hv_sc_status        (hv_bist1[5]                        ),
+    .o_bist_hv_adc_status       (hv_bist1[6]                        ),
 
     .o_lbist_en                 (lbist_en                           ),
 
@@ -712,31 +717,31 @@ hv_abist U_HV_ABIST(
 );
 
 assign hv_bist1[0] = 1'b0;
-assign hv_bist1[1] = 1'b0;
-assign hv_bist1[2] = 1'b0;
-assign hv_bist1[3] = 1'b0;
+assign hv_bist1[7] = 1'b0;
 
+assign hv_bist2[0] = 1'b0;
+assign hv_bist2[1] = 1'b0;
 assign hv_bist2[2] = 1'b0;
-assign hv_bist2[3] = 1'b0;
-assign hv_bist2[4] = 1'b0;
 assign hv_bist2[5] = 1'b0;
 assign hv_bist2[6] = 1'b0;
 assign hv_bist2[7] = 1'b0;
     
 hv_lbist U_HV_LBIST(
-    .i_bist_en                  (lbist_en                           ),
+    .i_bist_en                      (lbist_en                           ),
 
-    .i_owt_rx_ack               (owt_rx_rac_vld                     ),
-    .i_owt_rx_status            (owt_rx_rac_status                  ),
+    .i_owt_rx_ack                   (owt_rx_rac_vld                     ),
+    .i_owt_rx_status                (owt_rx_rac_status                  ),
+    .o_hv_owt_bist_rult             (hv_bist2[3]                        ),
 
-    .o_bist_scan_reg_req        (bist_scan_reg_req                  ),
-    .i_scan_reg_bist_ack        (scan_reg_bist_ack                  ),
-    .i_scan_reg_bist_err        (scan_reg_bist_err                  ),
+    .o_bist_scan_reg_req            (bist_scan_reg_req                  ),
+    .i_scan_reg_bist_ack            (scan_reg_bist_ack                  ),
+    .i_scan_reg_bist_err            (scan_reg_bist_err                  ),
+    .o_hv_scan_bist_rult            (hv_bist2[4]                        ),
 
-    .o_hv_bist_fail             (                                   ),
+    .o_hv_bist_done                 (hv_bist_done                       ),
 
-    .i_clk                      (i_clk                              ),
-    .i_rst_n                    (i_rst_n                            )
+    .i_clk                          (i_clk                              ),
+    .i_rst_n                        (i_rst_n                            )
 );
     
 hv_adc_sample U_HV_ADC_SAMPLE(

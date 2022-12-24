@@ -124,7 +124,7 @@ generate;
             if(~i_rst_n) begin
                 bist_status[i] <= 1'b1;
             end
-              else if(bist_detect_sig[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) begin
+              else if(i_bist_en & bist_detect_sig[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) begin
                 bist_status[i] <= 1'b0;
             end
             else;

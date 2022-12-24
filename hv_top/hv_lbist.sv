@@ -16,12 +16,14 @@ module hv_lbist #(
 
     input  logic           i_owt_rx_ack             ,
     input  logic           i_owt_rx_status          ,
+    output logic           o_hv_owt_bist_rult       ,
 
     output logic           o_bist_scan_reg_req      ,
     input  logic           i_scan_reg_bist_ack      ,
     input  logic           i_scan_reg_bist_err      ,
+    output logic           o_hv_scan_bist_rult      ,
 
-    output logic           o_hv_bist_fail           ,
+    output logic           o_hv_bist_done           ,
 
     input  logic           i_clk                    ,
     input  logic           i_rst_n
@@ -86,10 +88,10 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         end
         else;
     end
-    else begin
-	    scan_reg_bist_err <= 1'b0;
-    end
+    else;
 end
+
+assign o_hv_scan_bist_rult = ~scan_reg_bist_err;
 
 //owt
 always_ff@(posedge i_clk or negedge i_rst_n) begin
@@ -121,18 +123,28 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    o_hv_bist_fail <= 1'b0;
+	    o_hv_owt_bist_rult <= 1'b1;
 	end
   	else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
-        if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM) | scan_reg_bist_err) begin
-	        o_hv_bist_fail <= 1'b1;
+        if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM)) begin
+	        o_hv_owt_bist_rult <= 1'b0;
         end
         else begin
-	        o_hv_bist_fail <= 1'b0;            
+	        o_hv_owt_bist_rult <= 1'b1;            
         end
 	end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        o_hv_bist_done <= 1'b0;
+	end
+  	else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
+        o_hv_bist_done <= 1'b1;  
+	end
     else begin
-        o_hv_bist_fail <= 1'b0;            
+        o_hv_bist_done <= 1'b0;
     end
 end
 

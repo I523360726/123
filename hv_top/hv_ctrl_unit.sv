@@ -22,7 +22,7 @@ module hv_ctrl_unit #(
     input  logic                            i_reg_scan_crc_err  ,
     input  logic                            i_reg_owt_com_err   ,
     input  logic                            i_reg_wdg_tmo_err   ,//tmo = timeout
-    input  logic                            i_bist_fail_n       ,
+    input  logic                            i_reg_bist_fail     ,
     input  logic                            i_reg_hv_vcc_uverr  ,
     input  logic                            i_reg_hv_vcc_overr  ,
     input  logic                            i_reg_hv_ot_err     ,
@@ -55,6 +55,7 @@ module hv_ctrl_unit #(
     input  logic                            i_efuse_load_done   , //hardware lanch, indicate efuse have load done.
     
     output logic [CTRL_FSM_ST_W-1:      0]  o_hv_ctrl_cur_st    ,
+    input  logic                            i_hv_bist_done      ,
     
     input  logic                            i_clk               ,
     input  logic                            i_rst_n
@@ -74,6 +75,7 @@ logic [CTRL_FSM_ST_W-1:         0]  hv_ctrl_nxt_st      ;
 logic                               effect_pwm_err      ;
 logic                               fault_st_pwm_en     ;
 logic                               cfg_st_intb_n_en    ;
+logic                               bist_st_intb_n_en   ;
 logic                               lv_intb_n           ;
 logic                               fsiso_en            ;
 //==================================
@@ -96,7 +98,9 @@ assign effect_pwm_err = hv_err1 | i_reg_owt_com_err | i_reg_wdg_tmo_err;
 assign fault_st_pwm_en = (hv_ctrl_nxt_st==FAULT_ST) & ~effect_pwm_err;
 
 assign cfg_st_intb_n_en = (hv_ctrl_nxt_st==CFG_ST) & (i_reg_owt_com_err | i_reg_wdg_tmo_err | 
-                           i_reg_spi_err | i_reg_scan_crc_err | hv_err0 | ~i_bist_fail_n);                         
+                           i_reg_spi_err | i_reg_scan_crc_err | hv_err0 | i_reg_bist_fail);                         
+
+assign bist_st_intb_n_en = (hv_ctrl_nxt_st==BIST_ST) & ~i_hv_bist_done;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -365,7 +369,7 @@ end
 
 always_comb begin
     if((hv_ctrl_nxt_st==PWR_DWN_ST) || (hv_ctrl_nxt_st==WAIT_ST)  || (hv_ctrl_nxt_st==FSISO_ST) ||
-        (hv_ctrl_nxt_st==FAULT_ST) || cfg_st_intb_n_en || (hv_ctrl_nxt_st==RST_ST)) begin
+        (hv_ctrl_nxt_st==FAULT_ST) || cfg_st_intb_n_en || (hv_ctrl_nxt_st==RST_ST) || bist_st_intb_n_en) begin
         lv_intb_n = 1'b0;
     end
     else begin
