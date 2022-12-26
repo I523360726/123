@@ -96,9 +96,9 @@ logic [REG_DW-1:    0] reg_mask2                ;
 assign srst_n = reg_mode[0:0];
     
 rstn_merge U_RSTN_MERGE(
-    .i_hrst_n   (i_hrst_n),
-    .i_srst_n   (srst_n  ),
-    .o_rst_n    (rst_n   )
+    .i_hrst_n   (i_hrst_n   ),
+    .i_srst_n   (~srst_n    ),
+    .o_rst_n    (rst_n      )
 );
 assign o_rst_n = rst_n;
     

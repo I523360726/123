@@ -74,13 +74,8 @@ logic [2:                     0] rac_spi_ack_ff     ;
 //==================================
 //main code
 //==================================
-always_ff@(posedge i_spi_sclk or posedge i_spi_csb) begin
-    if(i_spi_csb) begin
-        spi_rx_bit <= SPI_RX_BIT_NUM'(0);
-    end
-    else begin
-        spi_rx_bit <= {spi_rx_bit[SPI_RX_BIT_NUM-2: 0], i_spi_mosi};
-    end
+always_ff@(posedge i_spi_sclk) begin
+    spi_rx_bit <= {spi_rx_bit[SPI_RX_BIT_NUM-2: 0], i_spi_mosi};
 end
 
 assign miso_cache = {slv_rsp_bit,spi_rx_bit};
@@ -178,7 +173,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign lt_acc_gap_err = (spi_acc_gap_cnt < SPI_MIN_ACC_CYC_NUM) & lanch_spi_access;
+assign lt_acc_gap_err = (spi_acc_gap_cnt < SPI_MIN_ACC_CYC_NUM) & lanch_spi_access & spi_access_flag;
 
 assign spi_err = spi_crc_err | lt_acc_gap_err;
 
