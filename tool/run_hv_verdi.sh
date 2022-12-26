@@ -9,7 +9,7 @@ verdi +v2k \
       -ssv \
       -ssy \
       -ssz \
-      -f ../lv_top/lv_top.f \
+      -f ../hv_top/hv_top.f \
       -l verdi_cmp.log \
-      -top dig_lv_top
+      -top dig_hv_top
 
