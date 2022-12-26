@@ -108,18 +108,18 @@ module dig_hv_top
 //==================================
 //local param delcaration
 //==================================
-logic rst_n_sync;    
+    
 //==================================
 //var delcaration
 //==================================
- 
+logic rst_n_sync; 
 //==================================        
 //main code
 //==================================
 rstn_sync U_RSTN_SYNC(
-    .i_clk                          (clk            ),
-    .i_asyn_rst_n                   (rst_n          ),
-    .o_rst_n                        (rst_n_sync     )
+    .i_clk                           (clk               ),
+    .i_asyn_rst_n                    (rst_n             ),
+    .o_rst_n                         (rst_n_sync        )
 );
 
 hv_core U_HV_CORE(
