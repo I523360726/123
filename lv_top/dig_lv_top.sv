@@ -88,7 +88,7 @@ module dig_lv_top
 //==================================
 //local param delcaration
 //==================================
-    
+logic rst_n_sync;    
 //==================================
 //var delcaration
 //==================================
@@ -96,6 +96,12 @@ module dig_lv_top
 //==================================        
 //main code
 //==================================
+rstn_sync U_RSTN_SYNC(
+    .i_clk                           (clk                       ),
+    .i_asyn_rst_n                    (rst_n                     ),
+    .o_rst_n                         (rst_n_sync                )
+);
+
 lv_core U_LV_CORE(
     .i_spi_sclk                      (sclk                      ),
     .i_spi_csb                       (csb                       ),
@@ -179,7 +185,7 @@ lv_core U_LV_CORE(
     .o_reg_config0_t_deat_time       (config0                   ),
  
     .i_clk                           (clk                       ),
-    .i_rst_n                         (rst_n                     )
+    .i_rst_n                         (rst_n_sync                )
 );
 // synopsys translate_off    
 //==================================
