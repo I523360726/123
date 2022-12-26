@@ -49,7 +49,7 @@ parameter OWT_COM_ERR_CNT_W                           = $clog2(OWT_COM_MAX_ERR_N
 parameter INIT_OWT_COM_ERR_NUM                        = OWT_COM_ERR_CNT_W'(32)           ,
 
 parameter CTRL_FSM_ST_NUM           = 9                                                  ,
-parameter CTRL_FSM_ST_W             = (CTRL_FSM_ST_NUM==1) ? 1 : $clog2(CTRL_FSM_ST_NUM)      ,
+parameter CTRL_FSM_ST_W             = (CTRL_FSM_ST_NUM==1) ? 1 : $clog2(CTRL_FSM_ST_NUM) ,
 
 parameter PWR_DWN_ST                = CTRL_FSM_ST_W'(0)                                  ,
 parameter WAIT_ST                   = CTRL_FSM_ST_W'(1)                                  ,
