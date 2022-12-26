@@ -104,7 +104,8 @@ always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
 end
 
 gnrl_sync #(
-    .DW(1)
+    .DW      (1),
+    .DEF_VAL (1)
 )U_SPI_CSB_SYNC(
     .i_data (i_spi_csb        ),
     .o_data (spi_csb_sync     ),
