@@ -67,8 +67,8 @@ module dig_hv_top
 
    output logic [7:     0]                             iso_bgr_trim                     ,
    output logic [7:     0]                             iso_con_ibias_trim               ,
-   output logic [7:     0]                             iso_osc48m_trim                  ,
-   output logic [7:     0]                             iso_oscb_freq_adj                ,
+   output logic [7:     0]                             osc48m                           ,
+   output logic [7:     0]                             iso_oscb_freq_trim               ,
    output logic [7:     0]                             iso_reserved_reg                 ,
    output logic [7:     0]                             iso_amp_ibias                    ,
    output logic [7:     0]                             iso_demo_trim                    ,
@@ -97,7 +97,7 @@ module dig_hv_top
    output logic [7:     0]                             dvdt_tm                          ,  
    output logic [7:     0]                             dvdt_win_value_en                , 
    output logic [7:     0]                             preset_delay                     , 
-   output logic [7:     0]                             drive_delay_set                  ,
+   output logic [7:     0]                             driver_delay_set                 ,
    output logic [7:     0]                             cmp_del                          ,
    output logic [7:     0]                             test_mux                         , 
    output logic [7:     0]                             cmp_adj_vreg                     ,
@@ -108,7 +108,7 @@ module dig_hv_top
 //==================================
 //local param delcaration
 //==================================
-    
+logic rst_n_sync;    
 //==================================
 //var delcaration
 //==================================
@@ -116,6 +116,12 @@ module dig_hv_top
 //==================================        
 //main code
 //==================================
+rstn_sync U_RSTN_SYNC(
+    .i_clk                          (clk            ),
+    .i_asyn_rst_n                   (rst_n          ),
+    .o_rst_n                        (rst_n_sync     )
+);
+
 hv_core U_HV_CORE(
     .i_s32_16                        (s32_16            ),
     .i_spi_sclk                      (sclk              ),
@@ -232,8 +238,8 @@ hv_core U_HV_CORE(
 
     .o_reg_iso_bgr_trim              (iso_bgr_trim      ),
     .o_reg_iso_con_ibias_trim        (iso_con_ibias_trim),
-    .o_reg_iso_osc48m_trim           (iso_osc48m_trim   ),
-    .o_reg_iso_oscb_freq_adj         (iso_oscb_freq_adj ),
+    .o_reg_iso_osc48m_trim           (osc48m            ),
+    .o_reg_iso_oscb_freq_adj         (iso_oscb_freq_trim),
     .o_reg_iso_reserved_reg          (iso_reserved_reg  ),
     .o_reg_iso_amp_ibias             (iso_amp_ibias     ),
     .o_reg_iso_demo_trim             (iso_demo_trim     ),
@@ -262,13 +268,13 @@ hv_core U_HV_CORE(
     .o_reg_dvdt_tm                   (dvdt_tm           ),  
     .o_reg_dvdt_win_value_en         (dvdt_win_value_en ), 
     .o_reg_preset_delay              (preset_delay      ), 
-    .o_reg_drive_delay_set           (drive_delay_set   ),
+    .o_reg_drive_delay_set           (driver_delay_set  ),
     .o_reg_cmp_del                   (cmp_del           ),
     .o_reg_test_mux                  (test_mux          ), 
     .o_reg_cmp_adj_vreg              (cmp_adj_vreg      ),
 
     .i_clk                           (clk               ),
-    .i_rst_n                         (rst_n             )
+    .i_rst_n                         (rst_n_sync        )
 );
 // synopsys translate_off    
 //==================================
