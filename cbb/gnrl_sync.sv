@@ -34,13 +34,8 @@ assign data[0] = i_data;
 
 generate
 for(genvar i=0; i<SYNC_PIPE_NUM; i=i+1) begin: PIPE_DATA_BLK
-    always_ff@(posedge i_clk or negedge i_rst_n) begin
-        if(~i_rst_n) begin
-            data[i+1] <= DEF_VAL;
-        end
-        else begin
-            data[i+1] <= data[i];
-        end
+    always_ff@(posedge i_clk) begin
+        data[i+1] <= data[i];
     end
 end
 endgenerate
