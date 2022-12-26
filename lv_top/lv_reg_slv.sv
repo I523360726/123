@@ -240,6 +240,8 @@ com_reg_bank U_LV_COM_REG_BANK(
     .i_hrst_n                      (i_hrst_n                ),
     .o_rst_n                       (rst_n                   )
 );
+
+assign o_rst_n = rst_n;
     
 //DIE1_EFUSE_CONFIG REGISTER
 rw_reg #(
