@@ -19,7 +19,7 @@ module dig_hv_top
 
    input  logic                                        d1d2_data                        , 
    output logic                                        d2d1_data                        ,
-   output logic                                        pwmn_intb                        , 
+   output logic                                        pwm_intb                         , 
 
    input  logic                                        tm                               , 
    output logic                                        vh_pins32                        , 
@@ -234,7 +234,7 @@ hv_core U_HV_CORE(
     .o_dgt_ang_pwm_en                (pwm_en            ),
     .o_dgt_ang_fsiso_en              (fsiso_en          ),
 
-    .o_pwmn_intb                     (pwmn_intb         ),
+    .o_pwmn_intb                     (pwm_intb          ),
 
     .o_reg_iso_bgr_trim              (iso_bgr_trim      ),
     .o_reg_iso_con_ibias_trim        (iso_con_ibias_trim),
