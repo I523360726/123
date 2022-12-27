@@ -89,97 +89,84 @@ always_ff @(negedge src_sclk or posedge csb) begin
     end    
 end
 
-rstn_sync U_RSTN_SYNC(
-    .i_clk                           (clk                       ),
-    .i_asyn_rst_n                    (rst_n                     ),
-    .o_rst_n                         (rst_n_sync                )
+dig_lv_top U_DIG_LV_TOP( 
+   .sclk                             (sclk                      ),
+   .csb                              (csb                       ),
+   .mosi                             (mosi                      ),
+   .miso                             (                          ),
+   .s32_16                           (1'b0                      ),
+
+   .d1d2_data                        (                          ),
+   .d2d1_data                        (1'b0                      ),
+   .d21_gate_back                    (1'b0                      ),
+
+   .tm                               (1'b0                      ), 
+   .vl_pins32                        (                          ),
+   .setb                             (1'b0                      ), 
+
+   .scan_mode                        (1'b0                      ),
+
+   .intb_o                           (                          ),
+   .fsc_en                           (                          ),
+   .pwm_en                           (                          ),
+
+   .uv_vsup                          (1'b1                      ), 
+   .dt_flag                          (1'b0                      ), 
+   .vsup_ov                          (1'b0                      ), 
+   .gate_vs_pwm                      (1'b0                      ), 
+   .rtmon                            (                          ),
+
+   .bistlv_ov                        (                          ),
+
+   .adc1_o                           (                          ),
+   .adc2_o                           (                          ),
+   .adc1_en                          (                          ),
+   .adc2_en                          (                          ),
+   .aout_wait                        (                          ),
+   .aout_bist                        (                          ),
+
+   .fsenb_i                          (1'b1                      ),
+   .fsstate_i                        (1'b0                      ),
+   .intb_i                           (1'b0                      ),
+   .inta_i                           (1'b0                      ),
+   .pwm_i                            (1'b0                      ),
+   .pwmalt_i                         (1'b0                      ),
+
+   .scl                              (1'b0                      ),
+   .sda_in                           (1'b0                      ),
+   .sda_out                          (                          ),
+   .se                               (                          ), 
+
+   .vl_pins16                        (                          ),  
+
+   .set_jdg                          (2'b0                      ),
+   .adc_dmvf                         (3'b0                      ),
+   .adc_sic                          (3'b0                      ),
+   .adc_vth                          (2'b0                      ),
+   .adc_soc                          (3'b0                      ), 
+   .jdg_disable                      (                          ),
+
+   .fault_b                          (3'b0                      ),
+   .fault_data_rst                   (                          ),
+   .rdy_oc_rst                       (                          ), 
+
+   .iso_bgr_trim                     (                          ),
+   .iso_con_ibias_trim               (                          ),
+   .iso_osc48m_trim                  (                          ),
+   .iso_oscb_freq_adj                (                          ),
+   .iso_reserved_reg                 (                          ),
+   .iso_amp_ibias                    (                          ),
+   .iso_demo_trim                    (                          ),
+   .iso_test_sw                      (                          ),
+   .iso_osc_jit                      (                          ),
+   .ana_reserved_reg                 (                          ),
+   .config0                          (                          ),
+
+    .clk                             (clk                       ),
+    .rst_n                           (rst_n                     )
 );
 
-lv_core U_LV_CORE(
-    .i_spi_sclk                      (sclk                      ),
-    .i_spi_csb                       (csb                       ),
-    .i_spi_mosi                      (mosi                      ),
-    .o_spi_miso                      (                          ), 
-    .i_s32_sel                       (1'b0                      ),
 
-    .o_lv_hv_owt_tx                  (                          ),
-    .i_hv_lv_owt_rx                  (1'b0                      ),
-    .i_hv_pwm_intb_n                 (1'b0                      ),
-
-    .i_io_test_mode                  (1'b0                      ), 
-    .o_fsm_ang_test_en               (                          ), 
-    .i_setb                          (1'b0                      ), 
-
-    .i_scan_mode                     (1'b0                      ),
-
-    .o_intb_n                        (                          ),
-    .o_dgt_ang_pwm_en                (                          ),
-    .o_dgt_ang_fsc_en                (                          ),
-
-    .i_lv_vsup_uv_n                  (1'b1                      ), 
-    .i_lv_pwm_dt                     (1'b0                      ), 
-    .i_lv_vsup_ov                    (1'b0                      ), 
-    .i_lv_gate_vs_pwm                (1'b0                      ), 
-    .o_rtmon                         (                          ),
-
-    .o_efuse_wmode                   (                          ),
-    .o_io_efuse_setb                 (                          ),
-    .o_efuse_wr_p                    (                          ),
-    .o_efuse_rd_p                    (                          ),
-    .o_efuse_addr                    (                          ),
-    .o_efuse_wdata0                  (                          ),
-    .o_efuse_wdata1                  (                          ),
-    .o_efuse_wdata2                  (                          ),
-    .o_efuse_wdata3                  (                          ),
-    .o_efuse_wdata4                  (                          ),
-    .o_efuse_wdata5                  (                          ),
-    .o_efuse_wdata6                  (                          ),
-    .o_efuse_wdata7                  (                          ),
-    .i_efuse_op_finish               (1'b0                      ),
-    .i_efuse_reg_update              (1'b0                      ),
-    .i_efuse_reg_data0               (8'b0                      ),
-    .i_efuse_reg_data1               (8'b0                      ),
-    .i_efuse_reg_data2               (8'b0                      ),
-    .i_efuse_reg_data3               (8'b0                      ),
-    .i_efuse_reg_data4               (8'b0                      ),
-    .i_efuse_reg_data5               (8'b0                      ),
-    .i_efuse_reg_data6               (8'b0                      ),
-    .i_efuse_reg_data7               (8'b0                      ),
-
-    .o_efuse_load_req                (                          ),
-    .i_efuse_load_done               (1'b0                      ),
-
-    .o_bistlv_ov                     (                          ),
-
-    .o_adc1_data                     (                          ),
-    .o_adc2_data                     (                          ),
-    .o_adc1_en                       (                          ),
-    .o_adc2_en                       (                          ),
-    .o_aout_wait                     (                          ),
-    .o_aout_bist                     (                          ),
-
-    .i_io_fsenb_n                    (1'b1                      ),
-    .i_io_fsstate                    (1'b0                      ),
-    .i_io_intb                       (1'b0                      ),
-    .i_io_inta                       (1'b0                      ),
-    .i_io_pwm                        (1'b0                      ),
-    .i_io_pwma                       (1'b0                      ),
-
-    .o_reg_iso_bgr_trim              (                          ),
-    .o_reg_iso_con_ibias_trim        (                          ),
-    .o_reg_iso_osc48m_trim           (                          ),
-    .o_reg_iso_oscb_freq_adj         (                          ),
-    .o_reg_iso_reserved_reg          (                          ),
-    .o_reg_iso_amp_ibias             (                          ),
-    .o_reg_iso_demo_trim             (                          ),
-    .o_reg_iso_test_sw               (                          ),
-    .o_reg_iso_osc_jit               (                          ),
-    .o_reg_ana_reserved_reg          (                          ),
-    .o_reg_config0_t_deat_time       (                          ),
- 
-    .i_clk                           (clk                       ),
-    .i_rst_n                         (rst_n_sync                )
-);
 // synopsys translate_off    
 //==================================
 //assertion
