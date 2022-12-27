@@ -241,7 +241,7 @@ crc8_serial U_CRC8_GEN(
     .i_data            (crc8_gen_i_vld_bit ),
     .i_new_calc        (crc8_gen_i_start   ),
     .o_vld_crc         (tx_crc_bit         ),
-    .i_clk	           (i_clk              ),
+    .i_clk             (i_clk              ),
     .i_rst_n           (i_rst_n            )
 );
 

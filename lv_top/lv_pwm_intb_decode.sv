@@ -124,6 +124,9 @@ end
 assign hv_intb0_pulse  = (lv_pwm_intb_cur_st==PWM_INTB_FSM_DETECT_0_ST) & (lv_pwm_intb_nxt_st==PWM_INTB_FSM_IDLE_ST) ;
 assign hv_intb1_pulse  = (lv_pwm_intb_cur_st==PWM_INTB_FSM_DETECT_3_ST) & (lv_pwm_intb_nxt_st==PWM_INTB_FSM_IDLE_ST) ;
 
+assign o_hv_intb0_pulse = hv_intb0_pulse;
+assign o_hv_intb1_pulse = hv_intb1_pulse;
+
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_hv_intb_n <= 1'b1; 

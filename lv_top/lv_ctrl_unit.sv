@@ -86,6 +86,7 @@ logic                               cfg_st_intb_n_en    ;
 logic                               bist_st_intb_n_en   ;
 logic                               lv_intb_n           ;
 logic                               lv_pwm_mmerr        ;
+logic                               efuse_load_done_ff  ;
 //==================================
 //main code
 //==================================
@@ -106,16 +107,26 @@ assign fault_st_pwm_en = (lv_ctrl_nxt_st==FAULT_ST) & ~effect_pwm_err;
 assign cfg_st_intb_n_en = (lv_ctrl_nxt_st==CFG_ST) & (i_reg_bist_fail | i_reg_owt_com_err | i_reg_wdg_tmo_err | 
                            i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0);    
 
-assign bist_st_intb_n_en = (lv_ctrl_nxt_st==BIST_ST) & ~i_lv_bist_done;                     
+assign bist_st_intb_n_en = (lv_ctrl_nxt_st==BIST_ST) & ~i_lv_bist_done;     
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        efuse_load_done_ff <= 1'b0;
+    end
+    else begin
+        efuse_load_done_ff <= i_efuse_load_done;
+    end
+end
+
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_efuse_load_req <= 1'b0;
     end
-    else if(i_efuse_load_done) begin
+    else if(efuse_load_done_ff) begin
         o_efuse_load_req <= 1'b0;
     end
-    else if(~i_io_test_mode & ~i_reg_efuse_vld & (lv_ctrl_cur_st==WAIT_ST)) begin
+    else if(~i_io_test_mode & ~i_reg_efuse_vld & (lv_ctrl_nxt_st==WAIT_ST)) begin
         o_efuse_load_req <= 1'b1;
     end
     else;
@@ -128,7 +139,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if(i_owt_rx_ack) begin
         o_fsm_wdg_owt_tx_req <= 1'b0;
     end
-    else if(~i_io_test_mode & i_reg_efuse_vld & (lv_ctrl_cur_st==WAIT_ST) & (i_reg_owt_com_err | i_reg_wdg_tmo_err)) begin
+    else if(~i_io_test_mode & i_reg_efuse_vld & (lv_ctrl_nxt_st==WAIT_ST) & (i_reg_owt_com_err | i_reg_wdg_tmo_err)) begin
         o_fsm_wdg_owt_tx_req <= 1'b1;
     end
     else;
@@ -158,7 +169,7 @@ always_comb begin
             if(~i_pwr_on) begin
                 lv_ctrl_nxt_st = PWR_DWN_ST;
             end
-            else if(i_io_test_mode || (i_efuse_load_done & ~i_reg_efuse_vld)) begin
+            else if(i_io_test_mode || (efuse_load_done_ff & ~i_reg_efuse_vld)) begin
                 lv_ctrl_nxt_st = TEST_ST; 
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err) & ~i_io_fsenb_n & i_reg_nml_en & i_reg_efuse_vld) begin

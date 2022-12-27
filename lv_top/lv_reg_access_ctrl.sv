@@ -36,8 +36,6 @@ module lv_reg_access_ctrl #(
     input  logic                    i_owt_tx_spi_ack        ,
     output logic                    o_spi_rst_wdg           ,
 
-    input  logic                    i_owt_rx_spi_rsp        ,
-
     output logic                    o_rac_reg_ren           ,
     output logic                    o_rac_reg_wen           ,
     output logic [REG_AW-1:     0]  o_rac_reg_addr          ,

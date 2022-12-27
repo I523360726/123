@@ -126,7 +126,6 @@ logic                                               spi_owt_rd_req          ;
 logic [REG_AW-1:            0]                      spi_owt_addr            ;
 logic [REG_DW-1:            0]                      spi_owt_data            ;
 logic                                               owt_tx_spi_ack          ;
-logic                                               owt_rx_spi_rsp          ;
 logic                                               spi_rst_wdg             ;
 
 logic                                               rac_reg_ren             ;
@@ -274,7 +273,6 @@ lv_reg_access_ctrl U_LV_REG_ACCESS_CTRL(
     .o_spi_owt_addr             (spi_owt_addr                       ),
     .o_spi_owt_data             (spi_owt_data                       ),
     .i_owt_tx_spi_ack           (owt_tx_spi_ack                     ),
-    .i_owt_rx_spi_rsp           (owt_rx_spi_rsp                     ),
     .o_spi_rst_wdg              (spi_rst_wdg                        ),
 
     .o_rac_reg_ren              (rac_reg_ren                        ),
@@ -321,8 +319,7 @@ lv_owt_rx_ctrl U_LV_OWT_RX_CTRL(
     .o_owt_rx_status            (owt_rx_status                      ),//0: normal; 1: error. 
 
     .o_owt_rx_wdg_rsp           (owt_rx_wdg_rsp                     ),
-    .i_wdg_owt_rx_tmo           (wdg_owt_rx_tmo                     ),//for test_st owt timeout, gen a owt_rx rsp.
-    .i_ctrl_unit_cur_fsm_st     (lv_ctrl_cur_st                     ),                           
+    .i_wdg_owt_rx_tmo           (wdg_owt_rx_tmo                     ),//for test_st owt timeout, gen a owt_rx rsp.                          
 
     .i_reg_comerr_mode          (reg_com_config1.comerr_mode        ),
     .i_reg_comerr_config        (reg_com_config1.comerr_config      ),
