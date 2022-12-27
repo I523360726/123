@@ -44,8 +44,6 @@ localparam SPI_RX_CRC_BIT_NUM    = 8                                            
 localparam SPI_RX_CHK_BIT_NUM    = SPI_RX_CMD_BIT_NUM+SPI_RX_DATA_BIT_NUM                    ;
 localparam SPI_RX_BIT_NUM        = SPI_RX_CMD_BIT_NUM+SPI_RX_DATA_BIT_NUM+SPI_RX_CRC_BIT_NUM ;
 localparam MISO_RPTR_W           = $clog2(2*SPI_RX_BIT_NUM)                                  ;
-localparam SPI_MIN_ACC_CYC_NUM   = 19*CLK_M                                                  ;//one core clk cycle is (1000/48)ns, 19us has (19x1000)ns/(1000/48)ns = 19x48 cycle.
-localparam SPI_MIN_ACC_CNT_W     = $clog2(SPI_MIN_ACC_CYC_NUM+1)                             ;
 //==================================
 //var delcaration
 //==================================
@@ -64,7 +62,6 @@ logic [SPI_RX_CHK_BIT_NUM-1:  0] crc16to8_data_in   ;
 logic [SPI_RX_CRC_BIT_NUM-1:  0] crc16to8_out       ;
 logic                            spi_crc_err        ;
 logic                            spi_access_flag    ;
-logic [SPI_MIN_ACC_CNT_W-1:   0] spi_acc_gap_cnt    ;
 logic                            lt_acc_gap_err     ;//lt == less than.
 logic                            spi_err            ;
 logic                            spi_rac_wen        ;
@@ -158,22 +155,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        spi_acc_gap_cnt <= SPI_MIN_ACC_CNT_W'(0);
-    end
-    else if(lanch_spi_access | rac_spi_ack_ff[2]) begin
-        spi_acc_gap_cnt <= SPI_MIN_ACC_CNT_W'(0);    
-    end
-    else if(spi_access_flag) begin
-        spi_acc_gap_cnt <= spi_acc_gap_cnt+1'b1;
-    end
-    else begin
-        spi_acc_gap_cnt <= SPI_MIN_ACC_CNT_W'(0);
-    end
-end
-
-assign lt_acc_gap_err = (spi_acc_gap_cnt < SPI_MIN_ACC_CYC_NUM) & lanch_spi_access & spi_access_flag;
+assign lt_acc_gap_err = lanch_spi_access & spi_access_flag;
 
 assign spi_err = spi_crc_err | lt_acc_gap_err;
 
