@@ -11,5 +11,6 @@ verdi +v2k \
       -ssz \
       -f ../lv_top/lv_top.f \
       -l verdi_cmp.log \
-      -top dig_lv_top
+      ../verification/tb_lv.sv \
+      -top tb_lv
 
