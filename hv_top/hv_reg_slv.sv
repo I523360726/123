@@ -274,6 +274,8 @@ logic   efuse_remote_reg_rd ;
 //==================================
 //main code
 //==================================
+assign o_rst_n = rst_n ;
+
 assign spi_read_efuse_en = reg_die2_efuse_status[3];
 
 always_comb begin : HIT_RD_EFUSE_BLK
