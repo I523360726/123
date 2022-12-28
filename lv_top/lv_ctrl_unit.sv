@@ -123,7 +123,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_efuse_load_req <= 1'b0;
     end
-    else if(efuse_load_done_ff) begin
+    else if(i_efuse_load_done) begin
         o_efuse_load_req <= 1'b0;
     end
     else if(~i_io_test_mode & ~i_reg_efuse_vld & (lv_ctrl_nxt_st==WAIT_ST)) begin
