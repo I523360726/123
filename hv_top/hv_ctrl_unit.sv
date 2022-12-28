@@ -78,6 +78,7 @@ logic                               cfg_st_intb_n_en    ;
 logic                               bist_st_intb_n_en   ;
 logic                               lv_intb_n           ;
 logic                               fsiso_en            ;
+logic                               efuse_load_done_ff  ;
 //==================================
 //main code
 //==================================
@@ -101,6 +102,15 @@ assign cfg_st_intb_n_en = (hv_ctrl_nxt_st==CFG_ST) & (i_reg_owt_com_err | i_reg_
                            i_reg_spi_err | i_reg_scan_crc_err | hv_err0 | i_reg_bist_fail);                         
 
 assign bist_st_intb_n_en = (hv_ctrl_nxt_st==BIST_ST) & ~i_hv_bist_done;
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        efuse_load_done_ff <= 1'b0;
+    end
+    else begin
+        efuse_load_done_ff <= i_efuse_load_done;
+    end
+end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -142,7 +152,7 @@ always_comb begin
             else if(fsifo_en) begin
                 hv_ctrl_nxt_st = FSISO_ST;
             end
-            else if(i_io_test_mode || (i_efuse_load_done & ~i_reg_efuse_vld)) begin
+            else if(i_io_test_mode || (efuse_load_done_ff & ~i_reg_efuse_vld)) begin
                 hv_ctrl_nxt_st = TEST_ST; 
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err) & i_reg_nml_en & i_reg_efuse_vld) begin
