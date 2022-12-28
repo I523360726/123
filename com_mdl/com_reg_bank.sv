@@ -181,7 +181,7 @@ rw_reg #(
     .o_reg_data           (reg_mode[0:0]                                ),
     .o_rcrc               (rcrc_mode[0:0]                               ),
     .i_clk                (i_clk                                        ),
-    .i_rst_n              (rst_n                                        )
+    .i_rst_n              (i_hrst_n                                     )
 );
     
 assign o_reg_mode = reg_mode;
