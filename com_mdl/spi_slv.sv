@@ -121,7 +121,7 @@ assign spi_rx_data = spi_rx_bit[SPI_RX_CRC_BIT_NUM +: SPI_RX_DATA_BIT_NUM] ;
 assign spi_rx_crc  = spi_rx_bit[SPI_RX_CRC_BIT_NUM-1:                   0] ;
 
 assign rac_rsp_data      = {~i_rac_spi_rack|i_rac_spi_wack, i_rac_spi_addr, i_rac_spi_data};
-assign crc16to8_data_in  = rac_spi_ack ? rac_rsp_data : {spi_rx_cmd, spi_rx_data}          ;
+assign crc16to8_data_in  = rac_spi_ack ? rac_rsp_data : lanch_spi_access ? {spi_rx_cmd, spi_rx_data} : SPI_RX_CHK_BIT_NUM'(0);
 
 crc16to8_parallel U_CRC16to8(
     .data_in(crc16to8_data_in    ),
@@ -206,7 +206,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        slv_rsp_bit <= SPI_RX_BIT_NUM'(0);
+        slv_rsp_bit <= {SPI_RX_CHK_BIT_NUM'(0), crc16to8_out};
     end
     else if(rac_spi_ack) begin
         slv_rsp_bit <= {rac_rsp_data, crc16to8_out};
