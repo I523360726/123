@@ -12,7 +12,6 @@ vcs -sverilog \
     -debug_acc+all \
     -kdb \
     -f ../lv_top/lv_top.f \
-    ../verification/tb_lv.sv \
     -timescale=1ns/100ps \
     -l ./vcs_cmp.log \
     -o test_simv
