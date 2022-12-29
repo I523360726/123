@@ -222,8 +222,6 @@ logic                                               hv_intb_n               ;
 
 logic                                               hv_intb0_pulse          ;
 logic                                               hv_intb1_pulse          ;
-
-logic                                               merge_rst_n             ;
 //==================================        
 //main code
 //==================================
@@ -490,7 +488,7 @@ lv_reg_slv U_LV_REG_SLV(
 
     .i_clk                      (i_clk                              ),
     .i_hrst_n                   (i_rst_n                            ),
-    .o_rst_n                    (merge_rst_n                        )
+    .o_rst_n                    (                                   )
 );
 
 assign o_adc1_en    = reg_mode.adc1_en          ;
@@ -553,7 +551,7 @@ lv_ctrl_unit U_LV_CTRL_UNIT(
     .i_lv_bist_done             (lv_bist_done                       ),
 
     .i_clk                      (i_clk                              ),
-    .i_rst_n                    (merge_rst_n                        )
+    .i_rst_n                    (i_rst_n                            )
 );
 
 lv_pwm_intb_decode U_LV_PWM_INTB_DECODE(
