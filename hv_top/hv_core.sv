@@ -316,7 +316,6 @@ logic [7:                   0]                      hv_bist2                ;
 
 logic                                               hv_bist_done            ;
 
-logic                                               merge_rst_n             ;
 //==================================        
 //main code
 //==================================
@@ -623,7 +622,7 @@ hv_reg_slv U_HV_REG_SLV(
 
     .i_clk                          (i_clk                              ),
     .i_hrst_n                       (i_rst_n                            ),
-    .o_rst_n                        (merge_rst_n                        )
+    .o_rst_n                        (                                   )
 );
 
 assign o_adc1_en = reg_mode.adc1_en;
@@ -676,7 +675,7 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_hv_bist_done             (hv_bist_done                       ),
 
     .i_clk                      (i_clk                              ),
-    .i_rst_n                    (merge_rst_n                        )
+    .i_rst_n                    (i_rst_n                            )
 );
 
 hv_pwm_intb_encode U_HV_PWM_INTB_ENCODE(
