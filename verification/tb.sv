@@ -390,6 +390,7 @@ efuse_ip_for_test #(
     .i_clk                           (hv_clk                    ),
     .i_rst_n                         (hv_rst_n                  )
 );
+
 // synopsys translate_off    
 //==================================
 //assertion
