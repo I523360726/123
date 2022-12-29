@@ -64,7 +64,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
 	    cur_acc_flag <= 1'b0;
 	end
-    if(i_d2d1rx_dpu_vld & ~spi_req_ing) begin
+    else if(i_d2d1rx_dpu_vld & ~spi_req_ing) begin
   	    cur_acc_flag <= 1'b0;
     end
     else if((i_spi_wr_req | i_spi_rd_req) & ~owt_req_ing) begin
