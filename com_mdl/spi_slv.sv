@@ -68,6 +68,8 @@ logic                            spi_rac_wen        ;
 logic                            spi_rac_ren        ;
 logic                            rac_spi_ack        ;
 logic [2:                     0] rac_spi_ack_ff     ;
+logic                            pre_load_miso      ;
+logic                            spi_miso           ;
 //==================================
 //main code
 //==================================
@@ -75,25 +77,36 @@ always_ff@(posedge i_spi_sclk) begin
     spi_rx_bit <= {spi_rx_bit[SPI_RX_BIT_NUM-2: 0], i_spi_mosi};
 end
 
-assign miso_cache = {slv_rsp_bit,spi_rx_bit};
+assign miso_cache = {slv_rsp_bit, spi_rx_bit};
 
 always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
     if(i_spi_csb) begin
-        miso_rptr <= (2*SPI_RX_BIT_NUM-1);
+        miso_rptr <= (2*SPI_RX_BIT_NUM-2);
     end
     else begin
-        miso_rptr <= (miso_rptr==0) ? (2*SPI_RX_BIT_NUM-1) : (miso_rptr-1'b1);
+        miso_rptr <= (miso_rptr==(SPI_RX_BIT_NUM-1)) ? (SPI_RX_BIT_NUM-1) : (miso_rptr-1'b1);
+    end
+end
+
+always_ff@(posedge i_spi_sclk or posedge i_spi_csb) begin
+    if(i_spi_csb) begin
+        pre_load_miso <= 1'b1;
+    end
+    else begin
+        pre_load_miso <= 1'b0;
     end
 end
 
 always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
     if(i_spi_csb) begin
-        o_spi_miso <= 1'b0;
+        spi_miso <= 1'b0;
     end
     else begin
-        o_spi_miso <= miso_cache[miso_rptr];
+        spi_miso <= miso_cache[miso_rptr];
     end
 end
+
+assign o_spi_miso = pre_load_miso ? slv_rsp_bit[SPI_RX_BIT_NUM-1] : spi_miso;
 
 gnrl_sync #(
     .DW      (1),
