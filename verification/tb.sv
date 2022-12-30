@@ -18,9 +18,6 @@ module tb();
 real        CYC_48MHZ           = (1000/48)             ;
 real        CYC_10MHZ           = (1000/10)             ;
 real        RST_TIME            = 400                   ; 
-parameter   SPI_CYC_CNT         = 25                    ;  
-parameter   SPI_CYC_CNT_W       = $clog2(SPI_CYC_CNT+1) ;
-parameter   [23: 0] FIRST_CMD   = {16'b0, 8'hB8}        ;
 //==================================
 //var delcaration
 //==================================
@@ -28,13 +25,12 @@ logic                       lv_rst_n            ;
 logic                       lv_clk              ;
 logic                       hv_rst_n            ;
 logic                       hv_clk              ;
-logic                       src_sclk            ;
+logic                       spi_clk             ;
 logic                       sclk                ;
 logic                       csb                 ;
 logic                       mosi                ;
 logic                       miso                ;
 logic                       s32_16              ;
-logic [SPI_CYC_CNT-1: 0]    spi_cyc_cnt         ;
 
 logic [0:    0]             lv_efuse_op_finish  ;
 logic [0:    0]             lv_efuse_reg_update ;
@@ -105,45 +101,28 @@ always begin
     hv_clk = 1'b1; #(CYC_48MHZ/2);
 end
 
+always begin
+    spi_clk = 1'b0; #(CYC_10MHZ/2);
+    spi_clk = 1'b1; #(CYC_10MHZ/2);
+end
+
 initial begin
     $fsdbDumpfile("tb_lv.fsdb");
     $fsdbDumpvars("+all");
     $fsdbDumpMDA(0, tb);
 end
 
-initial begin
-    csb = 1'b1; #(1000);
-    csb = 1'b0; #(CYC_10MHZ*30);
-    csb = 1'b1; #(10);
-    csb = 1'b1; #(1000);
-    csb = 1'b0; #(CYC_10MHZ*30);
-    csb = 1'b1; #(10);
-end
+gen_spi_sig #(
+    .MODE(0)
+)U_GEN_SPI_SIG(
+    .i_clk       (spi_clk   ),
+    .i_rst_n     (lv_rst_n  ),
 
-always begin
-    src_sclk = 1'b0; #(CYC_10MHZ/2);
-    src_sclk = 1'b1; #(CYC_10MHZ/2);
-end
-
-always_ff@(negedge src_sclk or posedge csb) begin
-    if(csb) begin
-        spi_cyc_cnt <= SPI_CYC_CNT_W'(0);
-    end
-    else begin
-        spi_cyc_cnt <= (spi_cyc_cnt==SPI_CYC_CNT) ? SPI_CYC_CNT : (spi_cyc_cnt+1'b1);
-    end
-end
-
-assign sclk = src_sclk & ~csb & (spi_cyc_cnt<SPI_CYC_CNT);
-
-always_ff @(negedge src_sclk or posedge csb) begin
-    if(csb) begin
-        mosi <= 1'b0;
-    end
-    else begin
-        mosi <= FIRST_CMD[SPI_CYC_CNT-2-spi_cyc_cnt];
-    end    
-end
+    .o_sclk      (sclk      ),
+    .o_csb       (csb       ),
+    .o_mosi      (mosi      ),
+    .i_miso      (          )
+);
 
 dig_lv_top_for_test U_DIG_LV_TOP( 
    .sclk                             (sclk                      ),
