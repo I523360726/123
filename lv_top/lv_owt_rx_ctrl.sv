@@ -18,8 +18,7 @@ module lv_owt_rx_ctrl #(
     output logic [OWT_ADCD_BIT_NUM-1:   0]  o_owt_rx_data               ,
     output logic                            o_owt_rx_status             ,//0: normal; 1: error. 
 
-    output logic                            o_owt_rx_wdg_rsp            ,
-    input  logic                            i_wdg_owt_rx_tmo            ,                         
+    output logic                            o_owt_rx_wdg_rsp            ,                        
 
     input  logic                            i_reg_comerr_mode           ,
     input  logic [3:                    0]  i_reg_comerr_config         ,
@@ -66,7 +65,6 @@ logic [OWT_COM_ERR_CNT_W-1:     0]  owt_com_err_cnt     ;
 logic [1:                       0]  owt_com_err_add_sel ;
 logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
-logic                               tmo_gen_rack        ;
 //==================================
 //main code
 //==================================
@@ -340,7 +338,6 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign tmo_gen_rack = i_wdg_owt_rx_tmo;
 assign owt_rx_ack   = (owt_rx_cur_st != OWT_IDLE_ST) & (owt_rx_nxt_st==OWT_IDLE_ST);
                     
 always_ff@(posedge i_clk or negedge i_rst_n) begin
@@ -348,7 +345,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_rx_wdg_rsp <= 1'b0;
     end
     else begin
-        o_owt_rx_wdg_rsp <= owt_rx_ack| tmo_gen_rack;
+        o_owt_rx_wdg_rsp <= owt_rx_ack;
     end
 end
 
@@ -357,7 +354,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_rx_ack <= 1'b0;
     end
     else begin
-        o_owt_rx_ack <= owt_rx_ack | tmo_gen_rack;
+        o_owt_rx_ack <= owt_rx_ack;
     end
 end
 
@@ -370,12 +367,12 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_rx_status <= 1'b0;
     end
     else begin
-        o_owt_rx_status <= owt_rx_status | tmo_gen_rack;
+        o_owt_rx_status <= owt_rx_status;
     end
 end
 
 assign o_owt_rx_cmd  = rx_cmd_data;
-assign o_owt_rx_data = rx_adc_data & {OWT_ADCD_BIT_NUM{~tmo_gen_rack}};
+assign o_owt_rx_data = rx_adc_data;
 
 
 assign owt_com_err_add_sel = i_reg_comerr_config[3: 2];

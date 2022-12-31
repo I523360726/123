@@ -33,7 +33,6 @@ module lv_wdg_ctrl #(
     input  logic                    i_bist_wdg_owt_tx_req           ,
 
     input  logic                    i_owt_rx_wdg_rsp                ,
-    output logic                    o_wdg_owt_rx_tmo                ,
     output logic                    o_wdg_timeout_err               ,
 
     input  logic [1:            0]  i_wdgtmo_config                 ,
@@ -257,8 +256,6 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
 end
 
 assign wdg_timeout_err = (wdg_timeout_cnt==(WDG_TIMEOUT_TH[i_wdgtmo_config]-1));
-
-assign o_wdg_owt_rx_tmo = wdg_timeout_err;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin

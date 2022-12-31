@@ -29,8 +29,10 @@ module lv_hv_shadow_reg import com_pkg::*;
     output logic [REG_DW-1:             0]  o_reg_bist1             ,
     output logic [REG_DW-1:             0]  o_reg_bist2             ,
 
-    output logic                            o_hv_reg_vld            ,
+    output logic                            o_hv_ang_reg_vld        ,
     output logic [REG_DW-1:             0]  o_hv_ang_reg_data       ,
+
+    output logic                            o_hv_dgt_reg_vld        ,
 
     input  logic                            i_clk                   ,
     input  logic                            i_rst_n
@@ -42,22 +44,29 @@ module lv_hv_shadow_reg import com_pkg::*;
 //==================================
 //var delcaration
 //==================================
-logic                  reg_wen          ;
-logic [REG_AW-1:    0] reg_addr         ;
-logic [2*ADC_DW-1:  0] reg_wdata        ;             
+logic                  reg_wen              ;
+logic [REG_AW-1:    0] reg_addr             ;
+logic [2*ADC_DW-1:  0] reg_wdata            ;
+logic                  hit_hv_ang_reg       ;  
+logic                  hit_hv_ang_reg_vld   ; 
+logic                  hit_hv_dgt_reg       ;
+logic                  hit_hv_dgt_reg_vld   ;           
 //==================================
 //main code
 //==================================
-assign reg_wen          = i_owt_rx_ack & ~i_owt_rx_status & i_owt_rx_cmd[OWT_CMD_BIT_NUM-1]         ;
-assign reg_addr         = i_owt_rx_cmd[OWT_CMD_BIT_NUM-2: 0]                                        ;
-assign reg_wdata        = i_owt_rx_data                                                             ;
+assign reg_wen              = i_owt_rx_ack & ~i_owt_rx_status & i_owt_rx_cmd[OWT_CMD_BIT_NUM-1]         ;
+assign reg_addr             = i_owt_rx_cmd[OWT_CMD_BIT_NUM-2: 0]                                        ;
+assign reg_wdata            = i_owt_rx_data                                                             ;
+assign hit_hv_ang_reg       = (reg_addr>=HV_ANALOG_REG_START_ADDR) & (reg_addr<=HV_ANALOG_REG_END_ADDR) ;
+assign hit_hv_ang_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_ang_reg                          ;
+assign hit_hv_dgt_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_dgt_reg                          ;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_hv_reg_vld <= 1'b0;
+        o_hv_ang_reg_vld <= 1'b0;
     end
     else begin
-        o_hv_reg_vld <= i_owt_rx_ack;
+        o_hv_ang_reg_vld <= hit_hv_ang_reg_vld;
     end
 end
 
@@ -65,8 +74,25 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_hv_ang_reg_data <= REG_DW'(0);
     end
-    else begin
+    else if(hit_hv_ang_reg_vld) begin
         o_hv_ang_reg_data <= i_owt_rx_data;
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        o_hv_dgt_reg_vld <= 1'b0;
+    end
+    else begin
+        o_hv_dgt_reg_vld <= hit_hv_dgt_reg_vld;
+    end
+end
+
+always_comb begin: HIT_HV_DGT_REG_BLK
+    hit_hv_dgt_reg = 1'b0;
+    for(integer i=0; i<COM_RD_REG_NUM; i=i+1) begin: GEN_HIT_HV_DGT_REG
+        hit_hv_dgt_reg = hit_hv_dgt_reg | (reg_addr==COM_RD_REG_ADDR[i]);
     end
 end
 

@@ -150,7 +150,6 @@ logic [OWT_ADCD_BIT_NUM-1:  0]                      owt_rx_data             ;
 logic                                               owt_rx_status           ;//0: normal; 1: error. 
 
 logic                                               owt_rx_wdg_rsp          ;
-logic                                               wdg_owt_rx_tmo          ;
 
 str_reg_com_config1                                 reg_com_config1         ;
 logic                                               owt_rx_reg_slv_owtcomerr;//owt_com_err.
@@ -193,8 +192,9 @@ logic [ADC_DW-1:             0]                     reg_hv_adc2_data        ;
 logic [REG_DW-1:             0]                     reg_hv_bist1            ;
 logic [REG_DW-1:             0]                     reg_hv_bist2            ;
 
-logic                                               hv_reg_vld              ;
+logic                                               hv_ang_reg_vld          ;
 logic [REG_DW-1:             0]                     hv_ang_reg_data         ;
+logic                                               hv_dgt_reg_vld          ;
 
 logic                                               efuse_op_finish         ;
 logic                                               efuse_reg_update        ;
@@ -286,8 +286,10 @@ lv_reg_access_ctrl U_LV_REG_ACCESS_CTRL(
     .i_reg_rac_rdata            (reg_rac_rdata                      ),
     .i_reg_rac_rcrc             (reg_rac_rcrc                       ),
 
-    .i_hv_reg_vld               (hv_reg_vld                         ),
+    .i_hv_ang_reg_vld           (hv_ang_reg_vld                     ),
     .i_hv_ang_reg_data          (hv_ang_reg_data                    ),
+
+    .i_hv_dgt_reg_vld           (hv_dgt_reg_vld                     ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )
@@ -318,8 +320,7 @@ lv_owt_rx_ctrl U_LV_OWT_RX_CTRL(
     .o_owt_rx_data              (owt_rx_data                        ),
     .o_owt_rx_status            (owt_rx_status                      ),//0: normal; 1: error. 
 
-    .o_owt_rx_wdg_rsp           (owt_rx_wdg_rsp                     ),
-    .i_wdg_owt_rx_tmo           (wdg_owt_rx_tmo                     ),//for test_st owt timeout, gen a owt_rx rsp.                          
+    .o_owt_rx_wdg_rsp           (owt_rx_wdg_rsp                     ),                         
 
     .i_reg_comerr_mode          (reg_com_config1.comerr_mode        ),
     .i_reg_comerr_config        (reg_com_config1.comerr_config      ),
@@ -353,7 +354,6 @@ lv_wdg_ctrl U_LV_WDG_CTRL(
     .i_bist_wdg_owt_tx_req      (bist_wdg_owt_tx_req                ),
 
     .i_owt_rx_wdg_rsp           (owt_rx_wdg_rsp                     ),
-    .o_wdg_owt_rx_tmo           (wdg_owt_rx_tmo                     ),
     .o_wdg_timeout_err          (wdg_owt_reg_slv_tmoerr             ),
 
     .i_wdgtmo_config            (reg_com_config2.lv_wdgtmo_config   ),
@@ -381,8 +381,10 @@ lv_hv_shadow_reg U_LV_HV_SHADOW_REG(
     .o_reg_bist1                (reg_hv_bist1                       ),
     .o_reg_bist2                (reg_hv_bist2                       ),
 
-    .o_hv_reg_vld               (hv_reg_vld                         ),
+    .o_hv_ang_reg_vld           (hv_ang_reg_vld                     ),
     .o_hv_ang_reg_data          (hv_ang_reg_data                    ),
+
+    .o_hv_dgt_reg_vld           (hv_dgt_reg_vld                     ),
 
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )

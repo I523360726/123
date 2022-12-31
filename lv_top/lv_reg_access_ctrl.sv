@@ -47,8 +47,10 @@ module lv_reg_access_ctrl #(
     input  logic [REG_DW-1:     0]  i_reg_rac_rdata         ,
     input  logic [REG_CRC_W-1:  0]  i_reg_rac_rcrc          ,
 
-    input  logic                    i_hv_reg_vld            ,
+    input  logic                    i_hv_ang_reg_vld        ,
     input  logic [REG_DW-1:     0]  i_hv_ang_reg_data       ,
+
+    input  logic                    i_hv_dgt_reg_vld        ,
 
     input  logic                    i_clk                   ,
     input  logic                    i_rst_n
@@ -56,10 +58,7 @@ module lv_reg_access_ctrl #(
 //==================================
 //local param delcaration
 //==================================
-localparam COM_WR_REG_NUM                                      = 9                                                        ;
-localparam COM_RD_REG_NUM                                      = 9                                                        ;
-localparam [REG_AW-1: 0] COM_WR_REG_ADDR[COM_WR_REG_NUM-1: 0]  = {7'h0B,7'h0A,7'h09,7'h08,7'h07,7'h06,7'h03,7'h02,7'h01}  ;
-localparam [REG_AW-1: 0] COM_RD_REG_ADDR[COM_RD_REG_NUM-1: 0]  = {7'h1F,7'h15,7'h14,7'h0D,7'h0C,7'h0A,7'h08,7'h07,7'h06}  ;
+
 //==================================
 //var delcaration
 //==================================
@@ -73,7 +72,10 @@ logic                                       owt_wr_ack              ;
 logic                                       owt_rd_ack              ;
 logic [REG_DW-1:            0]              rac_spi_data            ;
 logic                                       spi_owt_wr_req_ff       ;
-logic                                       spi_owt_rd_req_ff       ;                 
+logic                                       spi_owt_rd_req_ff       ; 
+logic                                       rac_spi_rack            ; 
+logic                                       spi_tmo                 ;
+logic [SPI_TMO_CNT_W-1:     0]              spi_tmo_cnt             ;               
 //==================================
 //main code
 //==================================
@@ -162,10 +164,35 @@ assign o_rac_reg_wcrc = i_spi_rac_wcrc;
 assign rac_spi_data    = i_spi_rac_wr_req ? o_rac_reg_wdata : 
                          (trig_owt_acc_ang_reg ? i_hv_ang_reg_data : i_reg_rac_rdata);
 
-assign o_rac_spi_wack = i_owt_tx_spi_ack  | (~trig_owt_wr_dgt_reg & ~trig_owt_acc_ang_reg & i_reg_rac_wack)                         ; 
-assign o_rac_spi_rack = i_hv_reg_vld      | (~trig_owt_rd_dgt_reg & ~trig_owt_acc_ang_reg & i_reg_rac_rack & ~wdg_scan_grant_ff[1]) ;
-assign o_rac_spi_data = rac_spi_data                                                                                                ;
-assign o_rac_spi_addr = o_rac_reg_addr                                                                                              ;
+assign o_rac_spi_wack = i_spi_rac_wr_req & ((trig_owt_wr_dgt_reg | trig_owt_acc_ang_reg) ? i_owt_tx_spi_ack : i_reg_rac_wack) ;
+assign rac_spi_rack   = i_spi_rac_rd_req & (trig_owt_acc_ang_reg ? i_hv_ang_reg_vld : 
+                                            trig_owt_rd_dgt_reg  ? i_hv_dgt_reg_vld : i_reg_rac_rack & ~wdg_scan_grant_ff[1]) ;
+assign o_rac_spi_data = rac_spi_data                                                                                          ;
+assign o_rac_spi_addr = o_rac_reg_addr                                                                                        ;
+
+assign o_rac_spi_rack = rac_spi_rack | spi_tmo;
+
+assign spi_tmo = (spi_tmo_cnt==(SPI_TMO_CYC_NUM-1));
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        spi_tmo_cnt <= SPI_TMO_CNT_W'(0);
+    end
+    else if(i_spi_rac_rd_req) begin
+        if(rac_spi_rack) begin
+            spi_tmo_cnt <= SPI_TMO_CNT_W'(0);        
+        end
+        else if(spi_tmo_cnt==(SPI_TMO_CYC_NUM-1)) begin
+            spi_tmo_cnt <= SPI_TMO_CNT_W'(0);
+        end
+        else begin
+            spi_tmo_cnt <= spi_tmo_cnt+1'b1;
+        end
+    end
+    else begin
+        spi_tmo_cnt <= SPI_TMO_CNT_W'(0);    
+    end
+end
 // synopsys translate_off    
 //==================================
 //assertion
