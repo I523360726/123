@@ -129,7 +129,9 @@ module hv_reg_slv import com_pkg::*; import hv_pkg::*;
 logic                  rst_n                            ;
 
 logic                  spi_reg_wen                      ;
+logic                  spi_reg_wen_ff                   ;
 logic                  spi_reg_ren                      ;
+logic                  spi_reg_ren_ff                   ;
 logic [REG_AW-1:    0] spi_reg_addr                     ;
 logic [REG_DW-1:    0] spi_reg_wdata                    ;
 logic [REG_CRC_W-1: 0] spi_reg_wcrc                     ;
@@ -2105,9 +2107,27 @@ assign spi_reg_addr  = i_spi_reg_addr   ;
 assign spi_reg_wdata = i_spi_reg_wdata  ;
 assign spi_reg_wcrc  = i_spi_reg_wcrc   ;
 
-assign o_reg_spi_wack= spi_reg_wen      ;
+always_ff@(posedge i_clk or negedge rst_n) begin
+    if(~rst_n) begin
+        spi_reg_wen_ff <= 1'b0;
+    end
+    else begin
+        spi_reg_wen_ff <= spi_reg_wen;
+    end
+end
 
-assign reg_spi_rack = hit_rd_efuse ? i_efuse_op_finish : spi_reg_ren;
+always_ff@(posedge i_clk or negedge rst_n) begin
+    if(~rst_n) begin
+        spi_reg_ren_ff <= 1'b0;     
+    end
+    else begin
+        spi_reg_ren_ff <= spi_reg_ren;       
+    end
+end
+
+assign o_reg_spi_wack= spi_reg_wen & ~spi_reg_wen_ff;
+
+assign reg_spi_rack = hit_rd_efuse ? i_efuse_op_finish : (spi_reg_ren & ~spi_reg_ren_ff);
 
 //rdata proc zone
 always_ff@(posedge i_clk or negedge rst_n) begin
