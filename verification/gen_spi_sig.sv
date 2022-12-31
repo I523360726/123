@@ -25,7 +25,6 @@ module gen_spi_sig #(
 //==================================
 parameter   SPI_CYC_CNT         = 24                                        ;  
 parameter   SPI_CYC_CNT_W       = $clog2(SPI_CYC_CNT+1)                     ;
-parameter   [23: 0] FIRST_CMD   = {16'h8455, 8'hB1}                         ;
 parameter   PRE_CYC_NUM         = 3                                         ;
 parameter   LOAD_CYC_NUM        = 3                                         ;
 parameter   TX_CYC_NUM          = SPI_CYC_CNT                               ;
@@ -48,12 +47,16 @@ parameter   END_ST              = ST_W'(6)                                  ;
 //==================================
 //var delcaration
 //==================================
-logic                        clk_en     ;
-logic [ST_W-1:          0]   cur_st     ;
-logic [ST_W-1:          0]   nxt_st     ;
-logic [ST_CNT_W-1:      0]   st_cnt     ;
-logic [DASIY_CNT_W-1:   0]   dasiy_cnt  ;
-logic                        tx_done    ;
+logic                        clk_en             ;
+logic [ST_W-1:          0]   cur_st             ;
+logic [ST_W-1:          0]   nxt_st             ;
+logic [ST_CNT_W-1:      0]   st_cnt             ;
+logic [DASIY_CNT_W-1:   0]   dasiy_cnt          ;
+logic                        tx_done            ;
+logic [23:              0]   spi_rx_bit         ;
+logic [23:              0]   spi_tx_bit         ;
+logic [15:              0]   crc16to8_data_in   ;
+logic [7:               0]   crc16to8_out       ;
 //==================================
 //main code
 //==================================
@@ -180,16 +183,29 @@ gnrl_clkgate U_GNRL_CLKGATE(
     .o_clk          (o_sclk      )
 );
 
+assign crc16to8_data_in = {8'h01, 8'h80};
+
+crc16to8_parallel U_CRC16to8(
+    .data_in(crc16to8_data_in    ),
+    .crc_out(crc16to8_out        )
+);
+
+assign spi_tx_bit = {crc16to8_data_in, crc16to8_out};
+
 always_ff@(negedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_mosi <= FIRST_CMD[SPI_CYC_CNT-1];    
+        o_mosi <= spi_tx_bit[SPI_CYC_CNT-1];    
     end
     else if(o_csb) begin
-        o_mosi <= FIRST_CMD[SPI_CYC_CNT-1];
+        o_mosi <= spi_tx_bit[SPI_CYC_CNT-1];
     end
     else begin
-        o_mosi <= FIRST_CMD[SPI_CYC_CNT-1-st_cnt];
+        o_mosi <= spi_tx_bit[SPI_CYC_CNT-1-st_cnt];
     end    
+end
+
+always_ff@(posedge o_sclk) begin
+    spi_rx_bit <= {spi_rx_bit[22: 0], i_miso};
 end
 
 // synopsys translate_off    

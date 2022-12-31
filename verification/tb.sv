@@ -121,14 +121,14 @@ gen_spi_sig #(
     .o_sclk      (sclk      ),
     .o_csb       (csb       ),
     .o_mosi      (mosi      ),
-    .i_miso      (          )
+    .i_miso      (miso      )
 );
 
 dig_lv_top_for_test U_DIG_LV_TOP( 
    .sclk                             (sclk                      ),
    .csb                              (csb                       ),
    .mosi                             (mosi                      ),
-   .miso                             (                          ),
+   .miso                             (miso                      ),
    .s32_16                           (1'b0                      ),
 
    .d1d2_data                        (d1d2_data                 ),
@@ -232,7 +232,7 @@ efuse_ip_for_test #(
     .i_rst_n                         (lv_rst_n                  )
 );
 
-dig_hv_top_for_test U_DIG_HV_TOP_FOR_TEST(
+dig_hv_top_for_test U_DIG_HV_TOP(
    .s32_16                           (1'b1                      ), 
    .sclk                             (1'b0                      ),
    .csb                              (1'b1                      ),
