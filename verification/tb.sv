@@ -79,7 +79,7 @@ logic                       d21_gate_back       ;
 initial begin
     lv_rst_n = 1'b1; #(100);
     lv_rst_n = 1'b0; #(RST_TIME);
-    lv_rst_n = 1'b1; #(50000);
+    lv_rst_n = 1'b1; #(500000);
     $finish;
 end
 
@@ -91,14 +91,13 @@ end
 initial begin
     #($random%60);
     hv_rst_n = 1'b1; #(100);
-    hv_rst_n = 1'b0; #(RST_TIME-99);
+    hv_rst_n = 1'b0; #(RST_TIME+($random%10));
     hv_rst_n = 1'b1; #(50000);
 end
 
 always begin
-    #($random%60);
-    hv_clk = 1'b0; #(CYC_48MHZ/2);
     hv_clk = 1'b1; #(CYC_48MHZ/2);
+    hv_clk = 1'b0; #(CYC_48MHZ/2);
 end
 
 always begin

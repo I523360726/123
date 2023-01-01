@@ -30,7 +30,7 @@ parameter   LOAD_CYC_NUM        = 3                                         ;
 parameter   TX_CYC_NUM          = SPI_CYC_CNT                               ;
 parameter   WAIT_CYC_NUM        = 10                                        ;
 parameter   CLR_CYC_NUM         = 6                                         ;
-parameter   END_CYC_NUM         = 120                                       ;
+parameter   END_CYC_NUM         = 500                                       ;
 parameter   ST_CNT_W            = $clog2(END_CYC_NUM)                       ;
 parameter   DASIY_NUM           = 2                                         ;
 parameter   DASIY_CNT_W         = (DASIY_NUM==1) ? 1 : $clog2(DASIY_NUM)    ;
@@ -183,7 +183,7 @@ gnrl_clkgate U_GNRL_CLKGATE(
     .o_clk          (o_sclk      )
 );
 
-assign crc16to8_data_in = {8'h01, 8'h80};
+assign crc16to8_data_in = {1'b0, 7'h40, 8'h80};
 
 crc16to8_parallel U_CRC16to8(
     .data_in(crc16to8_data_in    ),
