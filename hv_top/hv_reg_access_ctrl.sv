@@ -93,11 +93,11 @@ logic                                       tx_cmd_lock                 ;
 //==================================
 //main code
 //==================================
-assign owt_rx_reg_wen   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status & i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
-assign owt_rx_reg_ren   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status & i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
-assign owt_rx_reg_addr  = i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-2: 0]                                        ;
-assign owt_rx_reg_wdata = i_owt_rx_rac_data                                                             ;
-assign owt_rx_reg_wcrc  = i_owt_rx_rac_crc                                                              ;
+assign owt_rx_reg_wen   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status &  i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
+assign owt_rx_reg_ren   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status & ~i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
+assign owt_rx_reg_addr  = i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-2: 0]                                         ;
+assign owt_rx_reg_wdata = i_owt_rx_rac_data                                                              ;
+assign owt_rx_reg_wcrc  = i_owt_rx_rac_crc                                                               ;
 
 assign owt_grant        = owt_rx_reg_ren    ;
 assign owt_grant_ff[0]  = owt_grant         ;

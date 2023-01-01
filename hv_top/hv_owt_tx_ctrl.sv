@@ -57,7 +57,15 @@ logic                               cur_is_ack_adc      ;
 //==================================
 //main code
 //==================================
-assign cmd_flag  = i_rac_owt_tx_rd_cmd_vld ? RD_OP : WR_OP  ; 
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        cmd_flag <= RD_OP;
+    end
+    else if(i_rac_owt_tx_wr_cmd_vld | i_rac_owt_tx_rd_cmd_vld) begin
+        cmd_flag <= i_rac_owt_tx_rd_cmd_vld ? RD_OP : WR_OP;
+    end
+    else;
+end
          
 assign owt_tx_abort = 1'b0;
 

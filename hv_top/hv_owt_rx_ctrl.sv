@@ -64,6 +64,7 @@ logic [OWT_COM_ERR_CNT_W-1:     0]  owt_com_err_cnt     ;
 logic [1:                       0]  owt_com_err_add_sel ;
 logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
+logic                               rx_start            ;
 //==================================
 //main code
 //==================================
@@ -76,11 +77,13 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
+assign rx_start = rx_vld_lock & rx_vld & rx_vld_data & ~rx_vld_data_lock;
+
 always_comb begin
     owt_rx_nxt_st = owt_rx_cur_st;
     case(owt_rx_cur_st)
         OWT_IDLE_ST : begin 
-            if(rx_vld & rx_vld_data) begin
+            if(rx_start) begin
                 owt_rx_nxt_st = OWT_SYNC_HEAD_ST;
             end
             else;
@@ -149,8 +152,8 @@ end
 
 signal_detect #(
     .CNT_W(CNT_OWT_EXT_CYC_W    ),
-    .DN_TH(OWT_EXT_CYC_NUM-1    ),
-    .UP_TH(OWT_EXT_CYC_NUM      ),
+    .DN_TH(OWT_EXT_CYC_NUM-2    ),
+    .UP_TH(OWT_EXT_CYC_NUM-1    ),
     .MODE (1                    )
 ) U_OWT_RX_SIGNAL_DETECT(
     .i_vld        (1'b1          ),
@@ -251,7 +254,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         rx_bit_done <= 1'b0;
     end
-    else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_SYNC_HEAD_ST) & (rx_cnt_bit==(OWT_SYNC_BIT_NUM-2))) begin
+    else if(rx_mcst_vld_zero & (owt_rx_cur_st==OWT_SYNC_HEAD_ST) & (rx_cnt_bit==(OWT_SYNC_BIT_NUM-2))) begin
         rx_bit_done <= 1'b1;
     end
     else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_TAIL_ST) & (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1))) begin
