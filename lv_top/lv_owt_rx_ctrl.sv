@@ -26,9 +26,9 @@ module lv_owt_rx_ctrl #(
 
     input  logic [OWT_CMD_BIT_NUM-1:    0]  i_owt_tx_cmd_lock           ,        
     
-    input  logic                            i_clk	                    ,
+    input  logic                            i_clk                       ,
     input  logic                            i_rst_n
- );
+);
 //==================================
 //local param delcaration
 //==================================
@@ -65,6 +65,7 @@ logic [OWT_COM_ERR_CNT_W-1:     0]  owt_com_err_cnt     ;
 logic [1:                       0]  owt_com_err_add_sel ;
 logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
+logic                               rx_start            ;
 //==================================
 //main code
 //==================================
@@ -77,11 +78,13 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
+assign rx_start = rx_vld_lock & rx_vld & rx_vld_data & ~rx_vld_data_lock;
+
 always_comb begin
     owt_rx_nxt_st = owt_rx_cur_st;
     case(owt_rx_cur_st)
         OWT_IDLE_ST : begin 
-            if(rx_vld & rx_vld_data) begin
+            if(rx_start) begin
                 owt_rx_nxt_st = OWT_SYNC_HEAD_ST;
             end
             else;
@@ -159,8 +162,8 @@ end
 
 signal_detect #(
     .CNT_W(CNT_OWT_EXT_CYC_W    ),
-    .DN_TH(OWT_EXT_CYC_NUM-1    ),
-    .UP_TH(OWT_EXT_CYC_NUM      ),
+    .DN_TH(OWT_EXT_CYC_NUM-2    ),
+    .UP_TH(OWT_EXT_CYC_NUM-1    ),
     .MODE (1                    )
 ) U_OWT_RX_SIGNAL_DETECT(
     .i_vld        (1'b1          ),
