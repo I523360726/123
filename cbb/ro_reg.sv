@@ -17,7 +17,7 @@ module ro_reg #(
     parameter SUPPORT_SPI_EN_RD    = 1'b1       , 
     parameter END_OF_LIST          = 1
 )( 
-    input  logic 		   i_ren                ,
+    input  logic           i_ren                ,
     input  logic           i_test_st_reg_en     ,
     input  logic           i_cfg_st_reg_en      ,
     input  logic           i_spi_ctrl_reg_en    ,
