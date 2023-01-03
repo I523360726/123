@@ -631,7 +631,7 @@ assign o_adc2_en = reg_mode.adc2_en;
 hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_pwr_on                   (1'b1                               ),
     .i_io_test_mode             (i_io_test_mode                     ),
-    .i_reg_efuse_vld            (o_reg_iso_reserved_reg.efuse_vld   ),
+    .i_reg_efuse_vld            (o_reg_ibias_code_drv.d2_efuse_vld  ),
     .i_reg_efuse_done           (reg_mode.efuse_done                ),//soft lanch, make test_st -> wait_st
     .i_io_fsiso                 (i_io_fsiso                         ),
     .i_fsiso_en                 (reg_mode.fsiso_en                  ),
