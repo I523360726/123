@@ -24,6 +24,9 @@ module lv_owt_tx_ctrl #(
     output logic                            o_lv_hv_owt_tx      ,
 
     output logic [OWT_CMD_BIT_NUM-1:    0]  o_owt_tx_cmd_lock   ,
+
+    input  logic                            i_owt_rx_ack        ,
+    input  logic [OWT_CMD_BIT_NUM-1:    0]  i_owt_rx_cmd        ,
     
     input  logic                            i_clk	            ,
     input  logic                            i_rst_n
@@ -38,7 +41,9 @@ module lv_owt_tx_ctrl #(
 logic                               spi_owt_rw_flag     ;//0: read; 1: write.
 logic                               spi_owt_req         ;
 logic                               spi_owt_req_ff      ;
+logic                               spi_owt_new_req     ;
 logic                               wdg_owt_adc_req_ff  ;
+logic                               wdg_owt_adc_new_req ;
 logic                               owt_spi_grant       ;
 logic                               owt_wdg_grant       ;
 logic [OWT_FSM_ST_W-1:          0]  owt_tx_cur_st       ;
@@ -66,6 +71,8 @@ logic                               owt_tx_abort        ;
 logic                               cur_tx_is_wdg_radc  ;
 logic                               cur_tx_is_spi_req   ;
 logic                               lv_hv_owt_vld_nc    ;
+logic                               owt_rd_tmo          ;
+logic [OWT_TMO_CNT_W-1:         0]  owt_rd_tmo_cnt      ;
 //==================================
 //main code
 //==================================
@@ -84,6 +91,19 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        spi_owt_new_req <= 1'b0;
+    end
+    else if(o_owt_tx_spi_ack) begin
+        spi_owt_new_req <= 1'b0;
+    end    
+    else if(spi_owt_req & ~spi_owt_req_ff) begin
+        spi_owt_new_req <= 1'b1;
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         wdg_owt_adc_req_ff <= 1'b0;
     end
     else begin
@@ -91,12 +111,24 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign owt_tx_abort = (cur_tx_is_wdg_radc==1'b1) & spi_owt_req & tx_bit_extend_done;
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        wdg_owt_adc_new_req <= 1'b0;
+    end
+    else if(o_owt_wdg_adc_ack) begin
+        wdg_owt_adc_new_req <= 1'b0;
+    end
+    else if(i_wdg_owt_adc_req & ~wdg_owt_adc_req_ff) begin
+        wdg_owt_adc_new_req <= 1'b1;
+    end
+    else;
+end
 
-assign owt_spi_grant = (~cur_tx_is_wdg_radc & ~cur_tx_is_spi_req & spi_owt_req & ~spi_owt_req_ff) | 
-                       (cur_tx_is_wdg_radc & spi_owt_req & (owt_tx_nxt_st==OWT_IDLE_ST));
+assign owt_tx_abort = 1'b0;
 
-assign owt_wdg_grant = (~cur_tx_is_wdg_radc & ~cur_tx_is_spi_req & i_wdg_owt_adc_req & ~spi_owt_req);
+assign owt_spi_grant = (~cur_tx_is_wdg_radc & ~cur_tx_is_spi_req & spi_owt_new_req);
+
+assign owt_wdg_grant = (~cur_tx_is_wdg_radc & ~cur_tx_is_spi_req & wdg_owt_adc_new_req & ~spi_owt_new_req);
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -109,30 +141,59 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign o_owt_tx_spi_ack  = (cur_tx_is_spi_req  & spi_owt_req       & (owt_tx_cur_st!=OWT_IDLE_ST) & (owt_tx_nxt_st==OWT_IDLE_ST));
-assign o_owt_wdg_adc_ack = (cur_tx_is_wdg_radc & i_wdg_owt_adc_req & (owt_tx_cur_st!=OWT_IDLE_ST) & (owt_tx_nxt_st==OWT_IDLE_ST));
+assign o_owt_tx_spi_ack  = (cur_tx_is_spi_req & i_spi_owt_wr_req & (owt_tx_cur_st!=OWT_IDLE_ST) & (owt_tx_nxt_st==OWT_IDLE_ST)) ||
+                           (cur_tx_is_spi_req & i_spi_owt_rd_req & (i_owt_rx_ack | owt_rd_tmo));
+assign o_owt_wdg_adc_ack = (cur_tx_is_wdg_radc & i_wdg_owt_adc_req & (i_owt_rx_ack | owt_rd_tmo));
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         cur_tx_is_wdg_radc <= 1'b0;
-        cur_tx_is_spi_req  <= 1'b0;
     end
     else if(owt_wdg_grant) begin
         cur_tx_is_wdg_radc <= 1'b1;
+    end
+    else if(o_owt_wdg_adc_ack) begin
+        cur_tx_is_wdg_radc <= 1'b0;  
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         cur_tx_is_spi_req  <= 1'b0;
     end
     else if(owt_spi_grant) begin
-        cur_tx_is_wdg_radc <= 1'b0;
         cur_tx_is_spi_req  <= 1'b1;   
     end
-    else if((owt_tx_cur_st!=OWT_IDLE_ST) & (owt_tx_nxt_st==OWT_IDLE_ST)) begin
-        cur_tx_is_wdg_radc <= 1'b0;
+    else if(o_owt_tx_spi_ack) begin
         cur_tx_is_spi_req  <= 1'b0;     
     end
     else;
 end
 
- always_ff@(posedge i_clk or negedge i_rst_n) begin
+assign owt_rd_tmo = (owt_rd_tmo_cnt==(OWT_TMO_CYC_NUM-1));
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        owt_rd_tmo_cnt  <= OWT_TMO_CNT_W'(0);
+    end
+    else if(cur_tx_is_spi_req | cur_tx_is_wdg_radc) begin
+        if(o_owt_tx_spi_ack | o_owt_wdg_adc_ack) begin
+            owt_rd_tmo_cnt  <= OWT_TMO_CNT_W'(0);
+        end
+        else if(owt_rd_tmo_cnt==(OWT_TMO_CYC_NUM-1)) begin
+            owt_rd_tmo_cnt  <= OWT_TMO_CNT_W'(0);        
+        end
+        else begin
+            owt_rd_tmo_cnt <= owt_rd_tmo_cnt + 1'b1;
+        end   
+    end
+    else begin
+        owt_rd_tmo_cnt  <= OWT_TMO_CNT_W'(0);
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         owt_tx_cur_st <= OWT_FSM_ST_W'(0);
     end
@@ -308,9 +369,6 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         tx_cnt_bit <= CNT_OWT_MAX_W'(0);
     end
-    else if(owt_tx_abort) begin
-        tx_cnt_bit <= CNT_OWT_MAX_W'(0);
-    end
     else if(owt_tx_cur_st==OWT_SYNC_HEAD_ST) begin
         if(tx_mcst_vld) begin
             tx_cnt_bit <= (tx_cnt_bit==(OWT_SYNC_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (tx_cnt_bit+1'b1);
@@ -376,6 +434,10 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
+
 
 
 
