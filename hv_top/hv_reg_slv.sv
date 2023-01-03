@@ -43,7 +43,7 @@ module hv_reg_slv import com_pkg::*; import hv_pkg::*;
     output logic                                        o_efuse_wmode                   ,
     output logic                                        o_efuse_wr_p                    ,
     output logic                                        o_efuse_rd_p                    ,
-    output logic [5:       0]                           o_efuse_addr                    ,
+    output logic [6:       0]                           o_efuse_addr                    ,
     output logic [7:       0]                           o_efuse_wdata0                  ,
     output logic [7:       0]                           o_efuse_wdata1                  ,
     output logic [7:       0]                           o_efuse_wdata2                  ,
@@ -357,7 +357,7 @@ rw_reg #(
 );
     
 assign o_efuse_wmode  = reg_die2_efuse_config[7: 7] ;
-assign o_efuse_addr   = reg_die2_efuse_config[5: 0] ;
+assign o_efuse_addr   = reg_die2_efuse_config[6: 0] ;
 
 //DIE2_EFUSE_STATUS REGISTER
 rww_reg #(
@@ -2191,6 +2191,38 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
