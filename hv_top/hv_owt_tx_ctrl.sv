@@ -272,9 +272,6 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         tx_cnt_bit <= CNT_OWT_MAX_W'(0);
     end
-    else if(owt_tx_abort) begin
-        tx_cnt_bit <= CNT_OWT_MAX_W'(0);
-    end
     else if(owt_tx_cur_st==OWT_SYNC_HEAD_ST) begin
         if(tx_mcst_vld) begin
             tx_cnt_bit <= (tx_cnt_bit==(OWT_SYNC_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (tx_cnt_bit+1'b1);
@@ -337,6 +334,23 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
