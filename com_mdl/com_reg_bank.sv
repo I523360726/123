@@ -276,8 +276,8 @@ rwc_reg #(
     .i_wdata              (spi_reg_wdata                                ),
     .o_rdata              (rdata_status1                                ),
     .o_reg_data           (reg_status1                                  ),
-    .i_lgc_wen            (i_int_status1                                ),
-    .i_lgc_wdata          (8'hFF                                        ),
+    .i_lgc_wen            (8'hFF                                        ),
+    .i_lgc_wdata          (i_int_status1                                ),
     .i_clk                (i_clk                                        ),
     .i_rst_n              (rst_n                                        )
 );
@@ -341,8 +341,8 @@ rwc_reg #(
     .i_wdata              (spi_reg_wdata                                ),
     .o_rdata              (rdata_status2                                ),
     .o_reg_data           (reg_status2                                  ),
-    .i_lgc_wen            (i_int_status2                                ),
-    .i_lgc_wdata          (8'hFF                                        ),
+    .i_lgc_wen            (8'hFF                                        ),
+    .i_lgc_wdata          (i_int_status2                                ),
     .i_clk                (i_clk                                        ),
     .i_rst_n              (rst_n                                        )
 );
@@ -404,3 +404,4 @@ assign reg_spi_rcrc = rcrc_mode | rcrc_com_config1 | rcrc_com_config2 | rcrc_mas
 //    
 // synopsys translate_on    
 endmodule
+
