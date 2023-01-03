@@ -99,8 +99,8 @@ assign owt_rx_reg_addr  = i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-2: 0]                
 assign owt_rx_reg_wdata = i_owt_rx_rac_data                                                              ;
 assign owt_rx_reg_wcrc  = i_owt_rx_rac_crc                                                               ;
 
-assign owt_grant        = owt_rx_reg_ren    ;
-assign owt_grant_ff[0]  = owt_grant         ;
+assign owt_grant        = owt_rx_reg_ren | owt_rx_reg_wen ;
+assign owt_grant_ff[0]  = owt_grant                       ;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -127,8 +127,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign wdg_scan_grant_mask  = ~(|wdg_scan_grant_ff[2: 1])                                                          ;
-assign wdg_scan_grant       = i_wdg_scan_rac_rd_req & ~(i_spi_rac_wr_req | i_spi_rac_rd_req) & wdg_scan_grant_mask ;
+assign wdg_scan_grant_mask  = ~(|wdg_scan_grant_ff[2: 1])                                                                                            ;
+assign wdg_scan_grant       = i_wdg_scan_rac_rd_req & ~(owt_rx_reg_wen | owt_rx_reg_ren | i_spi_rac_wr_req | i_spi_rac_rd_req) & wdg_scan_grant_mask ;
 
 assign wdg_scan_grant_ff[0] = wdg_scan_grant;
 
@@ -229,7 +229,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_rac_owt_tx_rd_cmd_vld <= 1'b0;        
     end
     else begin
-        o_rac_owt_tx_wr_cmd_vld <= (i_reg_rac_wack & owt_grant_ff[1]) | (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
+        o_rac_owt_tx_wr_cmd_vld <= (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
         o_rac_owt_tx_rd_cmd_vld <= (i_reg_rac_rack & owt_grant_ff[2]) | (lanch_last_owt_tx & (tx_cmd_lock==RD_OP));           
     end
 end
@@ -290,5 +290,8 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
 
 
