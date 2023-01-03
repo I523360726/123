@@ -32,7 +32,7 @@ parameter   WAIT_CYC_NUM        = 10                                        ;
 parameter   CLR_CYC_NUM         = 6                                         ;
 parameter   END_CYC_NUM         = 500                                       ;
 parameter   ST_CNT_W            = $clog2(END_CYC_NUM)                       ;
-parameter   DASIY_NUM           = 2                                         ;
+parameter   DASIY_NUM           = 1                                         ;
 parameter   DASIY_CNT_W         = (DASIY_NUM==1) ? 1 : $clog2(DASIY_NUM)    ;
 
 parameter   ST_NUM              = 7                                         ;
@@ -57,6 +57,7 @@ logic [23:              0]   spi_rx_bit         ;
 logic [23:              0]   spi_tx_bit         ;
 logic [15:              0]   crc16to8_data_in   ;
 logic [7:               0]   crc16to8_out       ;
+logic [7:               0]   spi_cmd_cnt        ;
 //==================================
 //main code
 //==================================
@@ -163,6 +164,16 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        spi_cmd_cnt <= 8'b0;
+    end
+    else if((cur_st==CLR_ST) && (nxt_st==END_ST)) begin
+        spi_cmd_cnt <= spi_cmd_cnt+1'b1;
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         o_csb <= 1'b1;
     end
     else if(nxt_st==LOAD_ST) begin
@@ -183,7 +194,10 @@ gnrl_clkgate U_GNRL_CLKGATE(
     .o_clk          (o_sclk      )
 );
 
-assign crc16to8_data_in = {1'b0, 7'h40, 8'h80};
+assign crc16to8_data_in = (spi_cmd_cnt==8'h0) ? ({1'b1, 7'h40, 8'h5B}) : 
+                          (spi_cmd_cnt==8'h1) ? ({1'b0, 7'h40, 8'h00}) : 
+                          (spi_cmd_cnt==8'h2) ? ({1'b1, 7'h6E, 8'hA6}) : 
+                                                ({1'b0, 7'h6E, 8'h00}) ;
 
 crc16to8_parallel U_CRC16to8(
     .data_in(crc16to8_data_in    ),
@@ -217,3 +231,4 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
