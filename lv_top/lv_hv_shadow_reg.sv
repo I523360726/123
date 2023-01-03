@@ -54,7 +54,7 @@ logic                  hit_hv_dgt_reg_vld   ;
 //==================================
 //main code
 //==================================
-assign reg_wen              = i_owt_rx_ack & ~i_owt_rx_status & i_owt_rx_cmd[OWT_CMD_BIT_NUM-1]         ;
+assign reg_wen              = i_owt_rx_ack & ~i_owt_rx_status & ~i_owt_rx_cmd[OWT_CMD_BIT_NUM-1]        ;
 assign reg_addr             = i_owt_rx_cmd[OWT_CMD_BIT_NUM-2: 0]                                        ;
 assign reg_wdata            = i_owt_rx_data                                                             ;
 assign hit_hv_ang_reg       = (reg_addr>=HV_ANALOG_REG_START_ADDR) & (reg_addr<=HV_ANALOG_REG_END_ADDR) ;
@@ -402,6 +402,27 @@ rw_reg #(
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
