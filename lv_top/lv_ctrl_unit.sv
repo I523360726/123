@@ -412,7 +412,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_intb_n <= 1'b1;
     end
     else begin
-        o_intb_n <= lv_intb_n | i_hv_intb_n;
+        o_intb_n <= lv_intb_n & i_hv_intb_n;
     end
 end
 
@@ -449,4 +449,6 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
 
