@@ -76,7 +76,7 @@ logic                               effect_pwm_err      ;
 logic                               fault_st_pwm_en     ;
 logic                               cfg_st_intb_n_en    ;
 logic                               bist_st_intb_n_en   ;
-logic                               lv_intb_n           ;
+logic                               hv_intb_n           ;
 logic                               fsiso_en            ;
 logic                               efuse_load_done_ff  ;
 //==================================
@@ -380,10 +380,10 @@ end
 always_comb begin
     if((hv_ctrl_nxt_st==PWR_DWN_ST) || (hv_ctrl_nxt_st==WAIT_ST)  || (hv_ctrl_nxt_st==FSISO_ST) ||
         (hv_ctrl_nxt_st==FAULT_ST) || cfg_st_intb_n_en || (hv_ctrl_nxt_st==RST_ST) || bist_st_intb_n_en) begin
-        lv_intb_n = 1'b0;
+        hv_intb_n = 1'b0;
     end
     else begin
-        lv_intb_n = 1'b1;
+        hv_intb_n = 1'b1;
     end
 end
 
@@ -392,7 +392,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_intb_n <= 1'b1;
     end
     else begin
-        o_intb_n <= lv_intb_n;
+        o_intb_n <= hv_intb_n;
     end
 end
 
@@ -429,6 +429,9 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
 
 
 
