@@ -77,7 +77,7 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     output logic                                        o_io_efuse_setb                 ,
     output logic                                        o_efuse_wr_p                    ,
     output logic                                        o_efuse_rd_p                    ,
-    output logic [5:       0]                           o_efuse_addr                    ,
+    output logic [6:       0]                           o_efuse_addr                    ,
     output logic [7:       0]                           o_efuse_wdata0                  ,
     output logic [7:       0]                           o_efuse_wdata1                  ,
     output logic [7:       0]                           o_efuse_wdata2                  ,
@@ -809,6 +809,26 @@ assign spi_ack_addr        = ~i_s32_16 ? i_s16pin_spi_addr : s32pin_spi_addr ;
 //    
 // synopsys translate_on    
 endmodule
+    
+
+
+
+
+    
+
+
+
+
+    
+
+
+
+
+    
+
+
+
+
     
 
 
