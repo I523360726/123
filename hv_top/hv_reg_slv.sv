@@ -227,6 +227,7 @@ logic [REG_DW-1:    0] rdata_cmp_adj_vreg               ;
 
 logic [REG_DW-1:    0] reg_die2_efuse_config            ;
 logic [REG_DW-1:    0] reg_die2_efuse_status            ;
+logic [REG_DW-1:    0] die2_efuse_status_wdata          ;
 logic [REG_DW-1:    0] reg_die1_id                      ;
 logic [REG_DW-1:    0] reg_die2_id                      ;
 logic [REG_DW-1:    0] reg_die3_id                      ;
@@ -384,11 +385,15 @@ rww_reg #(
     .o_rdata              (rdata_die2_efuse_status                      ),
     .o_reg_data           (reg_die2_efuse_status                        ),
     .i_lgc_wen            (i_efuse_op_finish                            ),
-    .i_lgc_wdata          ({reg_die2_efuse_status[7:1], 1'b1}           ),
+    .i_lgc_wdata          (die2_efuse_status_wdata                      ),
     .i_clk                (i_clk                                        ),
     .i_rst_n              (rst_n                                        )
 );
-    
+assign  die2_efuse_status_wdata[0]      = 1'b1                          ;
+assign  die2_efuse_status_wdata[1]      = 1'b0                          ;
+assign  die2_efuse_status_wdata[2]      = 1'b0                          ;
+assign  die2_efuse_status_wdata[7: 3]   = reg_die2_efuse_status[7: 3]   ;
+
 assign  o_efuse_wr_p = reg_die2_efuse_status[2]                     ;
 assign  o_efuse_rd_p = reg_die2_efuse_status[1] & spi_read_efuse_en ;
 
@@ -2191,6 +2196,70 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
