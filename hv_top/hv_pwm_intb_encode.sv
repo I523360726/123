@@ -171,7 +171,7 @@ signal_extend #(
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_hv_pwm_intb_n <= 1'b0; 
+        o_hv_pwm_intb_n <= 1'b1; 
     end
     else begin
         o_hv_pwm_intb_n <= bit_extend_out_vld ? bit_extend_out : i_hv_pwm_gwave;
@@ -184,4 +184,6 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
 
