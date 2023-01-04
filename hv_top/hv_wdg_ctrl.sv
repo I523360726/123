@@ -156,7 +156,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         wdg_timeout_cnt <= WDG_CNT_W'(0);
     end
-    else if(i_wdg_scan_en) begin
+    else if(i_wdg_owt_en) begin
         if(i_owt_rx_rst_wdg_owt) begin
             wdg_timeout_cnt <= WDG_CNT_W'(0);        
         end
@@ -194,6 +194,26 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
