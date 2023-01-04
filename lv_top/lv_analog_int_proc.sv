@@ -81,10 +81,10 @@ gnrl_sync #(
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    lv_pwm_dt_sync_ff <= 1'b0;
-	end
+        lv_pwm_dt_sync_ff <= 1'b0;
+    end
     else begin
-	    lv_pwm_dt_sync_ff <= lv_pwm_dt_sync;    
+        lv_pwm_dt_sync_ff <= lv_pwm_dt_sync;    
     end
 end
 
@@ -92,13 +92,13 @@ assign o_lv_pwm_dterr = lv_pwm_dt_sync & ~lv_pwm_dt_sync_ff;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    cnt <= CNT_W'(0);
-	end
+        cnt <= CNT_W'(0);
+    end
     else if(lv_gate_vs_pwm_sync) begin
         cnt <= (cnt==(GATE_BACK_CYC_NUM[i_vge_mon_dly]-1)) ? cnt : (cnt+1'b1);
     end
     else begin
-	    cnt <= CNT_W'(0);
+        cnt <= CNT_W'(0);
     end
 end
 
@@ -111,6 +111,13 @@ assign o_lv_pwm_mmerr = (cnt==(GATE_BACK_CYC_NUM[i_vge_mon_dly]-1)) & lv_gate_vs
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
 
 
 
