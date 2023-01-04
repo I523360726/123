@@ -35,7 +35,7 @@ logic               detect_continue ;
 logic               detect_end      ;
 logic               last_vld        ;
 logic               last_vld_data   ;
-logic               detect_restart  ;
+logic               detect_hold     ;
 //==================================
 //main code
 //==================================
@@ -44,15 +44,18 @@ assign detect_continue  = i_vld & last_vld & (i_vld_data==last_vld_data);
 generate
     if(MODE==0) begin: PWM_MODE
         assign detect_end       = i_vld & last_vld & (i_vld_data!=last_vld_data) & (cnt>=DN_TH) & (cnt<=UP_TH);
-        assign detect_restart   = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=UP_TH);
+        assign detect_hold      = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=UP_TH);
 
         always_ff@(posedge i_clk or negedge i_rst_n) begin
             if(~i_rst_n) begin
                 cnt <= CNT_W'(0);
             end
-            else if(detect_end | detect_restart) begin
+            else if(detect_end) begin
                 cnt <= CNT_W'(1);
             end
+	    else if(detect_hold) begin
+                cnt <= (UP_TH+1'b1);
+	    end
             else if(detect_start | detect_continue) begin
                 cnt <= cnt + 1'b1;
             end
