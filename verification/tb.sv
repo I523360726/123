@@ -79,13 +79,8 @@ logic                       d21_gate_back       ;
 initial begin
     lv_rst_n = 1'b1; #(100);
     lv_rst_n = 1'b0; #(RST_TIME);
-    lv_rst_n = 1'b1; #(500000);
+    lv_rst_n = 1'b1; #(50000000);
     $finish;
-end
-
-always begin
-    lv_clk = 1'b0; #(CYC_48MHZ/2);
-    lv_clk = 1'b1; #(CYC_48MHZ/2);
 end
 
 initial begin
@@ -95,14 +90,28 @@ initial begin
     hv_rst_n = 1'b1; #(50000);
 end
 
-always begin
-    hv_clk = 1'b1; #(CYC_48MHZ/2);
-    hv_clk = 1'b0; #(CYC_48MHZ/2);
+initial begin
+    lv_clk = $urandom%2;
+    #($urandom%60);
+    forever begin
+        #(CYC_48MHZ/2) lv_clk = ~lv_clk;
+    end
 end
 
-always begin
-    spi_clk = 1'b0; #(CYC_10MHZ/2);
-    spi_clk = 1'b1; #(CYC_10MHZ/2);
+initial begin
+    hv_clk = $urandom%2;
+    #($urandom%57);
+    forever begin
+        #(CYC_48MHZ/2) hv_clk = ~hv_clk;
+    end
+end
+
+initial begin
+    spi_clk = $urandom%2;
+    #($urandom%29);
+    forever begin
+        #(CYC_10MHZ/2) spi_clk = ~spi_clk;
+    end
 end
 
 initial begin
@@ -377,6 +386,20 @@ efuse_ip_for_test #(
 // synopsys translate_on    
 endmodule
     
+    
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+
     
     
     
