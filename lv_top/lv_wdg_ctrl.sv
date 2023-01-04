@@ -226,7 +226,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if(~i_wdg_owt_en) begin
         owt_in_tx_flag <= 1'b0;    
     end
-    else if(wdg_timeout_err) begin
+    else if(wdg_timeout_err | i_owt_rx_wdg_rsp) begin
         owt_in_tx_flag <= 1'b0;    
     end
     else if(o_wdg_owt_tx_adc_req | i_spi_rst_wdg) begin
@@ -277,6 +277,25 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
