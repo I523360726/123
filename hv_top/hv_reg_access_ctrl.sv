@@ -229,7 +229,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_rac_owt_tx_rd_cmd_vld <= 1'b0;        
     end
     else begin
-        o_rac_owt_tx_wr_cmd_vld <= (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
+        o_rac_owt_tx_wr_cmd_vld <= (i_reg_rac_wack & owt_grant_ff[1]) | (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
         o_rac_owt_tx_rd_cmd_vld <= (i_reg_rac_rack & owt_grant_ff[2]) | (lanch_last_owt_tx & (tx_cmd_lock==RD_OP));           
     end
 end
@@ -290,6 +290,12 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
 
 
 
