@@ -65,6 +65,7 @@ logic [1:                       0]  owt_com_err_add_sel ;
 logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
 logic                               rx_start            ;
+logic                               lv_hv_owt_rx        ;
 //==================================
 //main code
 //==================================
@@ -150,6 +151,15 @@ always_comb begin
     endcase
 end
 
+gnrl_sync #(
+    .DW(1)
+)U_GNRL_SYNC(
+    .i_data     (i_lv_hv_owt_rx ),
+    .o_data     (lv_hv_owt_rx   ),
+    .i_clk      (i_clk          ),
+    .i_rst_n    (i_rst_n        )
+);
+
 signal_detect #(
     .CNT_W(CNT_OWT_EXT_CYC_W    ),
     .DN_TH(OWT_EXT_CYC_NUM-2    ),
@@ -157,7 +167,7 @@ signal_detect #(
     .MODE (1                    )
 ) U_OWT_RX_SIGNAL_DETECT(
     .i_vld        (1'b1          ),
-    .i_vld_data   (i_lv_hv_owt_rx),
+    .i_vld_data   (lv_hv_owt_rx  ),
     .o_vld        (rx_vld        ),
     .o_vld_data   (rx_vld_data   ),
     .i_clk        (i_clk         ),
@@ -419,6 +429,12 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
 
 
 
