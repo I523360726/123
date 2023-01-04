@@ -39,7 +39,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         vld_lock        <= 1'b0;
         vld_data_lock   <= 1'b0;
     end
-  	else if(i_vld) begin
+    else if(i_vld) begin
         vld_lock        <= 1'b1;
         vld_data_lock   <= i_vld_data;
     end
@@ -83,4 +83,6 @@ end
 `endif   
 // synopsys translate_on    
 endmodule
+
+
 
