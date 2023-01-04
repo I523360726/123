@@ -141,8 +141,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign o_owt_tx_spi_ack  = (cur_tx_is_spi_req & i_spi_owt_wr_req & (owt_tx_cur_st!=OWT_IDLE_ST) & (owt_tx_nxt_st==OWT_IDLE_ST)) ||
-                           (cur_tx_is_spi_req & i_spi_owt_rd_req & (i_owt_rx_ack | owt_rd_tmo));
+assign o_owt_tx_spi_ack  = (cur_tx_is_spi_req & spi_owt_req & (i_owt_rx_ack | owt_rd_tmo));
 assign o_owt_wdg_adc_ack = (cur_tx_is_wdg_radc & i_wdg_owt_adc_req & (i_owt_rx_ack | owt_rd_tmo));
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
@@ -434,6 +433,14 @@ end
 `endif
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
 
 
 
