@@ -48,13 +48,16 @@ assign o_efuse_load_done  = efuse_load_req_ff   ;
 assign o_efuse_op_finish  = efuse_load_req_ff   ;
 assign o_efuse_reg_update = efuse_load_req_ff   ;
 
-always_comb begin: EFUSE_REG_DATA_BLK
-    o_efuse_reg_data = (DATA_NUM*DW)'(0);
-    for(integer i=0; i<DATA_NUM; i=i+1) begin: GEN_EFUSE_REG_DATA_BLK
-        o_efuse_reg_data[i*DATA_NUM +: DATA_NUM] = {DATA_NUM{1'b1}};    
+generate
+    for(genvar i=0; i<DATA_NUM; i=i+1) begin: GEN_EFUSE_REG_DATA_BLK
+        if(i==(DATA_NUM-1)) begin: LST_DATA_BLK
+            assign o_efuse_reg_data[i*DW +: DW] = 8'hFF;
+        end
+        else begin: NO_LST_DATA_BLK
+            assign o_efuse_reg_data[i*DW +: DW] = 8'h00;            
+        end
     end
-end
-
+endgenerate
 
 // synopsys translate_off    
 //==================================
@@ -63,6 +66,10 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
 
 
 
