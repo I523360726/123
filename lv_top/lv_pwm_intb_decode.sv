@@ -48,6 +48,7 @@ logic [PWM_INTB_FSM_ST_W-1: 0]  lv_pwm_intb_cur_st      ;
 logic [PWM_INTB_FSM_ST_W-1: 0]  lv_pwm_intb_nxt_st      ;
 logic                           hv_intb0_pulse          ;
 logic                           hv_intb1_pulse          ;
+logic                           hv_pwm_intb_n           ;
 //==================================
 //main code
 //==================================
@@ -121,7 +122,7 @@ always_comb begin
     endcase
 end
 
-assign hv_intb0_pulse  = (lv_pwm_intb_cur_st==PWM_INTB_FSM_DETECT_0_ST) & (lv_pwm_intb_nxt_st==PWM_INTB_FSM_IDLE_ST) ;
+assign hv_intb0_pulse  = (lv_pwm_intb_cur_st==PWM_INTB_FSM_DETECT_1_ST) & (lv_pwm_intb_nxt_st==PWM_INTB_FSM_IDLE_ST) ;
 assign hv_intb1_pulse  = (lv_pwm_intb_cur_st==PWM_INTB_FSM_DETECT_3_ST) & (lv_pwm_intb_nxt_st==PWM_INTB_FSM_IDLE_ST) ;
 
 assign o_hv_intb0_pulse = hv_intb0_pulse;
@@ -140,14 +141,23 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
+gnrl_sync #(
+    .DW(1)
+)U_GNRL_SYNC(
+    .i_data     (i_hv_pwm_intb_n ),
+    .o_data     (hv_pwm_intb_n   ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
 signal_detect #(
     .CNT_W (4       ) ,
     .DN_TH (4'(4)   ) ,
     .UP_TH (4'(8)   ) ,
     .MODE  (0       ) 
 ) U_BIT_DETECT ( 
-    .i_vld        (i_hv_pwm_intb_n      ),
-    .i_vld_data   (i_hv_pwm_intb_n      ),
+    .i_vld        (1'b1                 ),
+    .i_vld_data   (hv_pwm_intb_n        ),
     .o_vld        (bit_detect_out_vld   ),
     .o_vld_data   (bit_detect_out       ),
     .i_clk        (i_clk                ),
@@ -161,4 +171,6 @@ signal_detect #(
 //    
 // synopsys translate_on    
 endmodule
+
+
 
