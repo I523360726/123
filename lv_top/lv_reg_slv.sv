@@ -314,8 +314,8 @@ assign  die1_efuse_status_wdata[1]      = 1'b0                          ;
 assign  die1_efuse_status_wdata[2]      = 1'b0                          ;
 assign  die1_efuse_status_wdata[7: 3]   = reg_die1_efuse_status[7: 3]   ;
 
-assign  o_efuse_wr_p = reg_die1_efuse_status[2]                     ;
-assign  o_efuse_rd_p = reg_die1_efuse_status[1] & spi_read_efuse_en ; 
+assign  o_efuse_wr_p = reg_die1_efuse_status[2]                                             ;
+assign  o_efuse_rd_p = (reg_die1_efuse_status[1] & spi_read_efuse_en) | efuse_remote_reg_rd ; 
 
 
 //DIE2_EFUSE_CONFIG REGISTER
