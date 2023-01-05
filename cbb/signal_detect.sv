@@ -60,7 +60,7 @@ generate
                 cnt <= cnt + 1'b1;
             end
             else begin
-                cnt <= CNT_W'(0);
+		    cnt <= CNT_W'(1);
             end
         end
     end
