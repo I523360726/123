@@ -1162,8 +1162,8 @@ assign spi_reg_addr  = i_spi_reg_addr   ;
 assign spi_reg_wdata = i_spi_reg_wdata  ;
 assign spi_reg_wcrc  = i_spi_reg_wcrc   ;
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         spi_reg_wen_ff <= 1'b0;
     end
     else begin
@@ -1171,8 +1171,8 @@ always_ff@(posedge i_clk or negedge rst_n) begin
     end
 end
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         spi_reg_ren_ff <= 1'b0;       
     end
     else begin
@@ -1185,8 +1185,8 @@ assign o_reg_spi_wack= spi_reg_wen & ~spi_reg_wen_ff;
 assign reg_spi_rack = hit_rd_efuse ? i_efuse_op_finish : (spi_reg_ren & ~spi_reg_ren_ff);
 
 //rdata proc zone
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rack <= 1'b0;
     end
     else begin
@@ -1208,8 +1208,8 @@ assign reg_spi_rdata = com_reg_rdata | rdata_die1_efuse_config | rdata_die1_efus
 
 assign reg_spi_rcrc = com_reg_rcrc | rcrc_config0_t_deat_time;
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rdata <= {REG_DW{1'b0}};
     end
     else begin
@@ -1217,8 +1217,8 @@ always_ff@(posedge i_clk or negedge rst_n) begin
     end
 end
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rcrc <= {REG_CRC_W{1'b0}};
     end
     else begin
