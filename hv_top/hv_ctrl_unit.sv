@@ -386,7 +386,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_intb_n <= 1'b1;
+        o_intb_n <= 1'b0; //i_rst_n is pwr_dwn_st.
     end
     else begin
         o_intb_n <= hv_intb_n;
