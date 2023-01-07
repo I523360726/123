@@ -1297,7 +1297,7 @@ rw_reg #(
     .DW                     (REG_DW     ),
     .AW                     (REG_AW     ),
     .CRC_W                  (REG_CRC_W  ),
-    .DEFAULT_VAL            (8'h18      ),
+    .DEFAULT_VAL            (8'h33      ),
     .REG_ADDR               (7'h56      ),
     .SUPPORT_TEST_MODE_WR   (1'b1       ),
     .SUPPORT_TEST_MODE_RD   (1'b1       ),
@@ -2112,8 +2112,8 @@ assign spi_reg_addr  = i_spi_reg_addr   ;
 assign spi_reg_wdata = i_spi_reg_wdata  ;
 assign spi_reg_wcrc  = i_spi_reg_wcrc   ;
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         spi_reg_wen_ff <= 1'b0;
     end
     else begin
@@ -2121,8 +2121,8 @@ always_ff@(posedge i_clk or negedge rst_n) begin
     end
 end
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         spi_reg_ren_ff <= 1'b0;     
     end
     else begin
@@ -2135,8 +2135,8 @@ assign o_reg_spi_wack= spi_reg_wen & ~spi_reg_wen_ff;
 assign reg_spi_rack = hit_rd_efuse ? i_efuse_op_finish : (spi_reg_ren & ~spi_reg_ren_ff);
 
 //rdata proc zone
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rack <= 1'b0;
     end
     else begin
@@ -2171,8 +2171,8 @@ assign reg_spi_rcrc = com_reg_rcrc | rcrc_config1_dr_src_snk_both | rcrc_config2
                       rcrc_config8_oc_sel | rcrc_config9_sc_sel | rcrc_config10_dvdt_ref_src | rcrc_config11_dvdt_ref_sink |
                       rcrc_config12_adc_en;
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rdata <= {REG_DW{1'b0}};
     end
     else begin
@@ -2180,8 +2180,8 @@ always_ff@(posedge i_clk or negedge rst_n) begin
     end
 end
 
-always_ff@(posedge i_clk or negedge rst_n) begin
-    if(~rst_n) begin
+always_ff@(posedge i_clk or negedge i_hrst_n) begin
+    if(~i_hrst_n) begin
         o_reg_spi_rcrc <= {REG_CRC_W{1'b0}};
     end
     else begin
