@@ -316,9 +316,110 @@ logic [7:                   0]                      hv_bist2                ;
 
 logic                                               hv_bist_done            ;
 
+logic                                               setb                    ;
+logic                                               io_test_mode            ;
+
+logic                                               vge_vce                 ;
+logic                                               io_fsiso                ;
+logic                                               io_pwma                 ;
+logic                                               io_pwm                  ;
+logic                                               io_fsstate              ;
+logic                                               io_fsenb_n              ;
+logic                                               io_intb                 ;
+logic                                               io_inta                 ;
 //==================================        
 //main code
 //==================================
+gnrl_sync #(
+    .DW(1)
+)U_SETB_SYNC(
+    .i_data     (i_setb          ),
+    .o_data     (setb            ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_TEST_MODE_SYNC(
+    .i_data     (i_io_test_mode  ),
+    .o_data     (io_test_mode    ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_VGE_VCE_SYNC(
+    .i_data     (i_vge_vce       ),
+    .o_data     (vge_vce         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_FSISO_SYNC(
+    .i_data     (i_io_fsiso      ),
+    .o_data     (io_fsiso        ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_PWMA_SYNC(
+    .i_data     (i_io_pwma       ),
+    .o_data     (io_pwma         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_PWM_SYNC(
+    .i_data     (i_io_pwm        ),
+    .o_data     (io_pwm          ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_FSSTATE_SYNC(
+    .i_data     (i_io_fsstate    ),
+    .o_data     (io_fsstate      ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_FSENB_N_SYNC(
+    .i_data     (i_io_fsenb_n    ),
+    .o_data     (io_fsenb_n      ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_INTB_SYNC(
+    .i_data     (i_io_intb       ),
+    .o_data     (io_intb         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_INTA_SYNC(
+    .i_data     (i_io_inta       ),
+    .o_data     (io_inta         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
 spi_slv U_SPI_SLV(
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
@@ -503,10 +604,10 @@ assign hv_status1 = {hv_bist_fail, 1'b0, 1'b0, 1'b0,
 assign hv_status2 = {hv_scp_err, hv_desat_err, hv_oc_err, hv_ot_err,
                      hv_vcc_overr, hv_vcc_uverr, 1'b0, 1'b0};
 
-assign vrtmon = reg_com_config1.rtmon ? ~i_vge_vce : i_vge_vce;                 
+assign vrtmon = reg_com_config1.rtmon ? ~vge_vce : vge_vce;                 
                      
-assign hv_status3 = {vrtmon,       i_io_fsiso,   i_io_pwma, i_io_pwm,
-                     i_io_fsstate, i_io_fsenb_n, i_io_intb, i_io_inta};
+assign hv_status3 = {vrtmon,     io_fsiso,   io_pwma, io_pwm,
+                     io_fsstate, io_fsenb_n, io_intb, io_inta};
     
 assign hv_status4 = {hv_ctrl_cur_st, 4'b0};   
 
@@ -630,10 +731,10 @@ assign o_adc2_en = reg_mode.adc2_en;
         
 hv_ctrl_unit U_HV_CTRL_UNIT(
     .i_pwr_on                   (1'b1                               ),
-    .i_io_test_mode             (i_io_test_mode                     ),
+    .i_io_test_mode             (io_test_mode                       ),
     .i_reg_efuse_vld            (o_reg_ibias_code_drv.d2_efuse_vld  ),
     .i_reg_efuse_done           (reg_mode.efuse_done                ),//soft lanch, make test_st -> wait_st
-    .i_io_fsiso                 (i_io_fsiso                         ),
+    .i_io_fsiso                 (io_fsiso                           ),
     .i_fsiso_en                 (reg_mode.fsiso_en                  ),
     .i_reg_spi_err              (reg_status1[0]                     ),
     .i_reg_scan_crc_err         (reg_status1[1]                     ),    
@@ -680,7 +781,7 @@ hv_ctrl_unit U_HV_CTRL_UNIT(
 
 hv_pwm_intb_encode U_HV_PWM_INTB_ENCODE(
     .i_hv_intb_n                (intb_n                             ),
-    .i_hv_pwm_gwave             (i_vge_vce                          ),
+    .i_hv_pwm_gwave             (vge_vce                            ),
     .i_wdgintb_en               (1'b1                               ),
     .i_wdgintb_config           (reg_com_config1.wdgintb_config     ),
     .o_hv_pwm_intb_n            (o_pwmn_intb                        ),
@@ -692,19 +793,19 @@ hv_abist U_HV_ABIST(
     .i_bist_en                  (bist_en                            ),
 
     .o_bist_hv_ov               (o_bist_hv_ov                       ),
-    .i_hv_vcc_ov                (i_hv_vcc_ov                        ),
+    .i_hv_vcc_ov                (hv_vcc_overr                       ),
 
     .o_bist_hv_ot               (o_bist_hv_ot                       ),
-    .i_hv_ot                    (i_hv_ot                            ),
+    .i_hv_ot                    (hv_ot_err                          ),
 
     .o_bist_hv_opscod           (o_bist_hv_opscod                   ),
-    .i_hv_desat_flt             (i_hv_desat_flt                     ),
+    .i_hv_desat_flt             (hv_desat_err                       ),
 
     .o_bist_hv_oc               (o_bist_hv_oc                       ),
-    .i_hv_oc                    (i_hv_oc                            ),
+    .i_hv_oc                    (hv_oc_err                          ),
 
     .o_bist_hv_sc               (o_bist_hv_sc                       ),
-    .i_hv_scp_flt               (i_hv_scp_flt                       ),
+    .i_hv_scp_flt               (hv_scp_err                         ),
 
     .o_bist_hv_adc              (o_bist_hv_adc                      ),
     .i_hv_adc_data1             (adc_data1                          ),
@@ -765,7 +866,7 @@ hv_adc_sample U_HV_ADC_SAMPLE(
 );
 
 
-assign o_io_efuse_setb    = i_setb             ;
+assign o_io_efuse_setb    = setb               ;
 assign efuse_op_finish    = i_efuse_op_finish  ;
 assign efuse_reg_update   = i_efuse_reg_update ;
 assign efuse_reg_data[0]  = i_efuse_reg_data0  ;

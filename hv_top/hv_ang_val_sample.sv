@@ -27,7 +27,7 @@ module hv_ang_val_sample #(
 //local param delcaration
 //==================================
 localparam SAMP_CYC_NUM = (2001*CLK_M+999)/1000  ; //after 2us
-localparam CNT_W        = $clog2(SAMP_CYC_NUM+1) ;
+localparam CNT_W        = $clog2(SAMP_CYC_NUM)   ;
 localparam CNT1_EN      = 8'b1000_0000           ;
 localparam CNT2_EN      = 8'b0100_0000           ;
 //==================================
@@ -43,7 +43,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         cnt1 <= CNT_W'(0);    
     end
     else if(i_reg_dvdt_tm==CNT1_EN) begin
-        cnt1 <= (cnt1==SAMP_CYC_NUM) ? SAMP_CYC_NUM : (cnt1+1'b1);
+        cnt1 <= (cnt1==(SAMP_CYC_NUM-1)) ? CNT_W'(0) : (cnt1+1'b1);
     end
     else begin
         cnt1 <= CNT_W'(0);        
@@ -55,7 +55,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         cnt2 <= CNT_W'(0);    
     end
     else if(i_reg_dvdt_tm==CNT2_EN) begin
-        cnt2 <= (cnt2==SAMP_CYC_NUM) ? SAMP_CYC_NUM : (cnt2+1'b1);
+        cnt2 <= (cnt2==(SAMP_CYC_NUM-1)) ? CNT_W'(0) : (cnt2+1'b1);
     end
     else begin
         cnt2 <= CNT_W'(0);        

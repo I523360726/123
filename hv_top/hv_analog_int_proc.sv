@@ -46,7 +46,7 @@ gnrl_sync #(
 )U_HV_VCC_UVERR_SYNC(
     .i_data         (~i_hv_vcc_uv       ) ,
     .o_data         (o_hv_vcc_uverr     ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
@@ -56,7 +56,7 @@ gnrl_sync #(
 )U_HV_VCC_OVERR_SYNC(
     .i_data         (i_hv_vcc_ov        ) ,
     .o_data         (o_hv_vcc_overr     ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
@@ -66,7 +66,7 @@ gnrl_sync #(
 )U_HV_OT_SYNC(
     .i_data         (i_hv_ot            ) ,
     .o_data         (o_hv_ot_err        ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
@@ -76,7 +76,7 @@ gnrl_sync #(
 )U_HV_OC_SYNC(
     .i_data         (i_hv_oc            ) ,
     .o_data         (o_hv_oc_err        ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
@@ -86,7 +86,7 @@ gnrl_sync #(
 )U_HV_DESAT_FLT_SYNC(
     .i_data         (i_hv_desat_flt     ) ,
     .o_data         (o_hv_desat_err     ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
@@ -96,7 +96,7 @@ gnrl_sync #(
 )U_HV_SCP_FLT_SYNC(
     .i_data         (i_hv_scp_flt       ) ,
     .o_data         (o_hv_scp_err       ) ,
-    .i_clk	        (i_clk              ) ,
+    .i_clk          (i_clk              ) ,
     .i_rst_n        (i_rst_n            )
 );
 
