@@ -222,9 +222,112 @@ logic                                               hv_intb_n               ;
 
 logic                                               hv_intb0_pulse          ;
 logic                                               hv_intb1_pulse          ;
+
+logic                                               setb                    ;
+logic                                               io_test_mode            ;
+logic                                               io_fsenb_n              ;
+logic                                               lv_vsup_ov              ;
+logic                                               lv_vsup_uv_n            ;
+
+logic                                               io_pwma                 ;
+logic                                               io_pwm                  ;
+logic                                               io_fsstate              ;
+logic                                               io_intb                 ;
+logic                                               io_inta                 ;
 //==================================        
 //main code
 //==================================
+gnrl_sync #(
+    .DW(1)
+)U_SETB_SYNC(
+    .i_data     (i_setb          ),
+    .o_data     (setb            ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_TEST_MODE_SYNC(
+    .i_data     (i_io_test_mode  ),
+    .o_data     (io_test_mode    ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_FSENB_N_SYNC(
+    .i_data     (i_io_fsenb_n    ),
+    .o_data     (io_fsenb_n      ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_LV_VSUP_OV_SYNC(
+    .i_data     (i_lv_vsup_ov    ),
+    .o_data     (lv_vsup_ov      ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_LV_VSUP_UV_N_SYNC(
+    .i_data     (i_lv_vsup_uv_n  ),
+    .o_data     (lv_vsup_uv_n    ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_PWMA_SYNC(
+    .i_data     (i_io_pwma       ),
+    .o_data     (io_pwma         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_PWM_SYNC(
+    .i_data     (i_io_pwm        ),
+    .o_data     (io_pwm          ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_FSSTATE_SYNC(
+    .i_data     (i_io_fsstate    ),
+    .o_data     (io_fsstate      ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_INTB_SYNC(
+    .i_data     (i_io_intb       ),
+    .o_data     (io_intb         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+gnrl_sync #(
+    .DW(1)
+)U_IO_INTA_SYNC(
+    .i_data     (i_io_inta       ),
+    .o_data     (io_inta         ),
+    .i_clk      (i_clk           ),
+    .i_rst_n    (i_rst_n         )
+);
+
+
 spi_slv U_SPI_SLV(
     .i_spi_sclk                 (i_spi_sclk                         ),
     .i_spi_csb                  (i_spi_csb                          ),
@@ -413,10 +516,10 @@ assign lv_bist_fail = |(lv_bist1 | lv_bist2);
 assign lv_status1 = {lv_bist_fail, 1'b0, lv_pwm_mmerr, lv_pwm_dterr,
                      wdg_owt_reg_slv_tmoerr, owt_rx_reg_slv_owtcomerr, wdg_scan_reg_slv_crcerr, spi_reg_slv_err};
 
-assign lv_status2 = {6'b0, i_lv_vsup_ov, ~i_lv_vsup_uv_n};
+assign lv_status2 = {6'b0, lv_vsup_ov, ~lv_vsup_uv_n};
 
-assign lv_status3 = {1'b0,         1'b0,         i_io_pwma, i_io_pwm,
-                     i_io_fsstate, i_io_fsenb_n, i_io_intb, i_io_inta};
+assign lv_status3 = {1'b0,       1'b0,       io_pwma, io_pwm,
+                     io_fsstate, io_fsenb_n, io_intb, io_inta};
 
 assign lv_status4 = {4'b0, lv_ctrl_cur_st};   
 
@@ -504,10 +607,10 @@ assign o_rtmon      = reg_com_config1.rtmon     ;
 
 lv_ctrl_unit U_LV_CTRL_UNIT(
     .i_pwr_on                   (1'b1                               ),
-    .i_io_test_mode             (i_io_test_mode                     ),
+    .i_io_test_mode             (io_test_mode                       ),
     .i_reg_efuse_vld            (o_reg_iso_reserved_reg.efuse_vld   ),
     .i_reg_efuse_done           (reg_mode.efuse_done                ),//soft lanch, make test_st -> wait_st
-    .i_io_fsenb_n               (i_io_fsenb_n                       ),
+    .i_io_fsenb_n               (io_fsenb_n                         ),
     .i_reg_spi_err              (reg_status1[0]                     ),
     .i_reg_scan_crc_err         (reg_status1[1]                     ),    
     .i_reg_owt_com_err          (reg_status1[2]                     ),
@@ -571,7 +674,7 @@ lv_pwm_intb_decode U_LV_PWM_INTB_DECODE(
 
 lv_abist U_LV_ABIST(
     .i_bist_en                  (bist_en                            ),     
-    .i_lv_vsup_ov               (i_lv_vsup_ov                       ),
+    .i_lv_vsup_ov               (lv_vsup_ov                         ),
     .o_lbist_en                 (lbist_en                           ),
     .o_lv_abist_rult            (lv_bist1[0]                        ),
     .o_bistlv_ov                (o_bistlv_ov                        ),
@@ -601,7 +704,7 @@ lv_lbist U_LV_LBIST(
 );
 
 
-assign o_io_efuse_setb   = i_setb             ;
+assign o_io_efuse_setb   = setb               ;
 assign efuse_op_finish   = i_efuse_op_finish  ;
 assign efuse_reg_update  = i_efuse_reg_update ;
 assign efuse_reg_data[0] = i_efuse_reg_data0  ;
