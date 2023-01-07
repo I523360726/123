@@ -31,6 +31,9 @@ logic                       csb                 ;
 logic                       mosi                ;
 logic                       miso                ;
 logic                       s32_16              ;
+logic                       spi_start           ;
+logic [7:    0]             spi_cmd             ;
+logic [7:    0]             spi_data            ;
 
 logic [0:    0]             lv_efuse_op_finish  ;
 logic [0:    0]             lv_efuse_reg_update ;
@@ -73,6 +76,9 @@ logic                       hv_efuse_load_done  ;
 logic                       d1d2_data           ;
 logic                       d2d1_data           ;
 logic                       d21_gate_back       ;
+
+logic                       test_mode           ;
+logic [31:  0]              spi_cnt             ;
 //==================================        
 //main code
 //==================================
@@ -120,11 +126,38 @@ initial begin
     $fsdbDumpMDA(0, tb);
 end
 
+//assign crc16to8_data_in = (spi_cmd_cnt==8'h0) ? ({1'b1, 7'h40, 8'h5B}) : 
+//                          (spi_cmd_cnt==8'h1) ? ({1'b0, 7'h40, 8'h00}) : 
+//                          (spi_cmd_cnt==8'h2) ? ({1'b1, 7'h6E, 8'hA6}) : 
+//                                                ({1'b0, 7'h6E, 8'h00}) ;
+
+always_ff@(negedge spi_clk or negedge lv_rst_n) begin
+    if(~lv_rst_n) begin
+        spi_cnt <= 32'b0;    
+    end
+    else begin
+        spi_cnt <= spi_cnt + 1'b1;
+    end    
+end
+
+assign test_mode = (spi_cnt>32'd3000) & (spi_cnt<32'd4000); 
+assign spi_start = (spi_cnt==32'd10000) || (spi_cnt==32'd15000) || 
+                   (spi_cnt==32'd20000) || (spi_cnt==32'd25000) ||
+                   (spi_cnt==32'd30000) || (spi_cnt==32'd35000);
+assign spi_cmd   = {1'b1, 7'h01};
+assign spi_data  = (spi_cnt<32'd15000) ? 8'b1000_0000 : 
+                   (spi_cnt<32'd20000) ? 8'b0000_0010 :
+                   (spi_cnt<32'd25000) ? 8'b0000_0100 : 
+                   (spi_cnt<32'd30000) ? 8'b0000_0001 : 8'b0000_0000;
+
 gen_spi_sig #(
     .MODE(0)
 )U_GEN_SPI_SIG(
     .i_clk       (spi_clk   ),
     .i_rst_n     (lv_rst_n  ),
+    .i_start     (spi_start ),
+    .i_cmd       (spi_cmd   ),
+    .i_data      (spi_data  ),
 
     .o_sclk      (sclk      ),
     .o_csb       (csb       ),
@@ -143,7 +176,7 @@ dig_lv_top_for_test U_DIG_LV_TOP(
    .d2d1_data                        (d2d1_data                 ),
    .d21_gate_back                    (d21_gate_back             ),
 
-   .tm                               (1'b0                      ), 
+   .tm                               (test_mode                 ), 
    .vl_pins32                        (                          ),
    .setb                             (1'b0                      ), 
 
@@ -205,22 +238,22 @@ dig_lv_top_for_test U_DIG_LV_TOP(
    .ana_reserved_reg                 (                          ),
    .config0                          (                          ),
 
-    .i_efuse_op_finish               (lv_efuse_op_finish        ),
-    .i_efuse_reg_update              (lv_efuse_reg_update       ),
-    .i_efuse_reg_data0               (lv_efuse_reg_data0        ),
-    .i_efuse_reg_data1               (lv_efuse_reg_data1        ),
-    .i_efuse_reg_data2               (lv_efuse_reg_data2        ),
-    .i_efuse_reg_data3               (lv_efuse_reg_data3        ),
-    .i_efuse_reg_data4               (lv_efuse_reg_data4        ),
-    .i_efuse_reg_data5               (lv_efuse_reg_data5        ),
-    .i_efuse_reg_data6               (lv_efuse_reg_data6        ),
-    .i_efuse_reg_data7               (lv_efuse_reg_data7        ),
+   .i_efuse_op_finish                (lv_efuse_op_finish        ),
+   .i_efuse_reg_update               (lv_efuse_reg_update       ),
+   .i_efuse_reg_data0                (lv_efuse_reg_data0        ),
+   .i_efuse_reg_data1                (lv_efuse_reg_data1        ),
+   .i_efuse_reg_data2                (lv_efuse_reg_data2        ),
+   .i_efuse_reg_data3                (lv_efuse_reg_data3        ),
+   .i_efuse_reg_data4                (lv_efuse_reg_data4        ),
+   .i_efuse_reg_data5                (lv_efuse_reg_data5        ),
+   .i_efuse_reg_data6                (lv_efuse_reg_data6        ),
+   .i_efuse_reg_data7                (lv_efuse_reg_data7        ),
 
-    .o_efuse_load_req                (lv_efuse_load_req         ),
-    .i_efuse_load_done               (lv_efuse_load_done        ),
+   .o_efuse_load_req                 (lv_efuse_load_req         ),
+   .i_efuse_load_done                (lv_efuse_load_done        ),
 
-    .clk                             (lv_clk                    ),
-    .rst_n                           (lv_rst_n                  )
+   .clk                              (lv_clk                    ),
+   .rst_n                            (lv_rst_n                  )
 );
 
 assign {lv_efuse_reg_data7, lv_efuse_reg_data6, lv_efuse_reg_data5, lv_efuse_reg_data4, 
@@ -252,19 +285,19 @@ dig_hv_top_for_test U_DIG_HV_TOP(
    .d2d1_data                        (d2d1_data                 ),
    .pwm_intb                         (d21_gate_back             ), 
 
-   .tm                               (1'b0                      ), 
+   .tm                               (test_mode                 ), 
    .vh_pins32                        (                          ), 
    .setb                             (1'b0                      ),
-   .off_vbn_read_i                   (4'b0                      ),
-   .on_vbn_read_i                    (4'b0                      ),  
-   .cnt_del_i                        (6'b0                      ),
+   .off_vbn_read_i                   (4'h6                      ),
+   .on_vbn_read_i                    (4'hE                      ),  
+   .cnt_del_i                        (6'h2E                     ),
 
    .scan_mode                        (1'b0                      ),
 
    .pwm_en                           (                          ), 
    .fsiso_en                         (                          ), 
 
-   .uv_vcc                           (1'b0                      ), 
+   .uv_vcc                           (1'b1                      ), 
    .ov_vcc                           (1'b0                      ),
    .otp                              (1'b0                      ),
    .desat_fault                      (1'b0                      ), 

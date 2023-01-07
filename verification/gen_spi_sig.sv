@@ -14,6 +14,9 @@ module gen_spi_sig #(
 )( 
     input  logic                i_clk       ,
     input  logic                i_rst_n     ,
+    input  logic                i_start     ,
+    input  logic [7:        0]  i_cmd       ,
+    input  logic [7:        0]  i_data      ,
 
     output logic                o_sclk      ,
     output logic                o_csb       ,
@@ -74,7 +77,10 @@ always_comb begin
     nxt_st = cur_st;
     case(cur_st)
         IDLE_ST : begin
-            nxt_st = PRE_ST;
+            if(i_start) begin
+                nxt_st = PRE_ST;
+            end
+            else;
         end
         PRE_ST : begin
             if(st_cnt==(PRE_CYC_NUM-1)) begin
@@ -194,10 +200,7 @@ gnrl_clkgate U_GNRL_CLKGATE(
     .o_clk          (o_sclk      )
 );
 
-assign crc16to8_data_in = (spi_cmd_cnt==8'h0) ? ({1'b1, 7'h40, 8'h5B}) : 
-                          (spi_cmd_cnt==8'h1) ? ({1'b0, 7'h40, 8'h00}) : 
-                          (spi_cmd_cnt==8'h2) ? ({1'b1, 7'h6E, 8'hA6}) : 
-                                                ({1'b0, 7'h6E, 8'h00}) ;
+assign crc16to8_data_in = {i_cmd, i_data};
 
 crc16to8_parallel U_CRC16to8(
     .data_in(crc16to8_data_in    ),
