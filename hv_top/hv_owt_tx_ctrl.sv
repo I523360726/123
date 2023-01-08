@@ -212,7 +212,7 @@ assign tx_extend_bit_in = ((owt_tx_cur_st==OWT_SYNC_HEAD_ST) | (owt_tx_cur_st==O
 assign tx_vld = (owt_tx_start_ff | tx_bit_extend_done) & (owt_tx_cur_st!=OWT_IDLE_ST);
 
 signal_extend #(
-    .EXTEND_CYC_NUM(12)
+    .EXTEND_CYC_NUM(OWT_EXT_CYC_NUM)
 ) U_OWT_TX_SIGNAL_EXTEND(
     .i_vld        (tx_vld               ),
     .i_vld_data   (tx_extend_bit_in     ),
