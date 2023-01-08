@@ -6,7 +6,7 @@ parameter REG_CRC_W             = 8                                             
 parameter REQ_ADC_ADDR          = 7'h1f                                                     ,
 
 parameter OWT_FSM_ST_NUM        = 9                                                         ,
-parameter OWT_EXT_CYC_NUM       = 12                                                        ,
+parameter OWT_EXT_CYC_NUM       = 6                                                         ,
 parameter OWT_CRC_BIT_NUM       = 8                                                         ,
 parameter OWT_CMD_BIT_NUM       = 8                                                         ,
 parameter OWT_DATA_BIT_NUM      = 8                                                         ,
