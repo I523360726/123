@@ -53,9 +53,9 @@ generate
             else if(detect_end) begin
                 cnt <= CNT_W'(1);
             end
-	    else if(detect_hold) begin
+	        else if(detect_hold) begin
                 cnt <= (UP_TH+1'b1);
-	    end
+	        end
             else if(detect_start | detect_continue) begin
                 cnt <= cnt + 1'b1;
             end
