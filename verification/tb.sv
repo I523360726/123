@@ -140,15 +140,16 @@ always_ff@(negedge spi_clk or negedge lv_rst_n) begin
     end    
 end
 
-assign test_mode = (spi_cnt>32'd3000) & (spi_cnt<32'd4000); 
-assign spi_start = (spi_cnt==32'd10000) || (spi_cnt==32'd15000) || 
-                   (spi_cnt==32'd20000) || (spi_cnt==32'd25000) ||
-                   (spi_cnt==32'd30000) || (spi_cnt==32'd35000);
-assign spi_cmd   = {1'b1, 7'h01};
-assign spi_data  = (spi_cnt<32'd15000) ? 8'b1000_0000 : 
-                   (spi_cnt<32'd20000) ? 8'b0000_0010 :
-                   (spi_cnt<32'd25000) ? 8'b0000_0100 : 
-                   (spi_cnt<32'd30000) ? 8'b0000_0001 : 8'b0000_0000;
+assign test_mode = 1'b0; 
+assign spi_start = (spi_cnt==32'd35000) || (spi_cnt==32'd36000) || 
+                   (spi_cnt==32'd37000) || (spi_cnt==32'd38000) ||
+                   (spi_cnt==32'd39000) || (spi_cnt==32'd40000) ;
+assign spi_cmd   = (spi_cnt<32'd36000) ? {1'b1, 7'h08} : {1'b1, 7'h01};
+assign spi_data  = (spi_cnt<32'd36000) ? 8'b1111_1111 : 
+                   (spi_cnt<32'd37000) ? 8'b1000_0000 : 
+                   (spi_cnt<32'd38000) ? 8'b0000_0010 :
+                   (spi_cnt<32'd39000) ? 8'b0000_0100 : 
+                   (spi_cnt<32'd40000) ? 8'b0000_0001 : 8'b0000_0000;
 
 gen_spi_sig #(
     .MODE(0)
