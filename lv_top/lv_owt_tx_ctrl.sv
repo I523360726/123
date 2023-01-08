@@ -26,7 +26,6 @@ module lv_owt_tx_ctrl #(
     output logic [OWT_CMD_BIT_NUM-1:    0]  o_owt_tx_cmd_lock   ,
 
     input  logic                            i_owt_rx_ack        ,
-    input  logic [OWT_CMD_BIT_NUM-1:    0]  i_owt_rx_cmd        ,
     
     input  logic                            i_clk	            ,
     input  logic                            i_rst_n
@@ -311,7 +310,7 @@ assign tx_extend_bit_in = ((owt_tx_cur_st==OWT_SYNC_HEAD_ST) | (owt_tx_cur_st==O
 assign tx_vld = (owt_tx_start_ff | tx_bit_extend_done) & (owt_tx_cur_st!=OWT_IDLE_ST);
 
 signal_extend #(
-    .EXTEND_CYC_NUM(12)
+    .EXTEND_CYC_NUM(OWT_EXT_CYC_NUM)
 ) U_OWT_TX_SIGNAL_EXTEND(
     .i_vld        (tx_vld               ),
     .i_vld_data   (tx_extend_bit_in     ),

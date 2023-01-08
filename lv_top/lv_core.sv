@@ -413,7 +413,6 @@ lv_owt_tx_ctrl U_LV_OWT_TX_CTRL(
     .o_owt_tx_cmd_lock          (owt_tx_cmd_lock                    ),
 
     .i_owt_rx_ack               (owt_rx_ack                         ),
-    .i_owt_rx_cmd               (owt_rx_cmd                         ),
     
     .i_clk                      (i_clk                              ),
     .i_rst_n                    (i_rst_n                            )

@@ -30,12 +30,13 @@ localparam PWM_DETECT_CNT_W         = $clog2(PWM_INTB_EXT_CYC_NUM+1);
 localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(4)          ;
 localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(8)          ;
 
-localparam PWM_INTB_FSM_ST_NUM      = 4                             ;
+localparam PWM_INTB_FSM_ST_NUM      = 5                             ;
 localparam PWM_INTB_FSM_ST_W        = $clog2(PWM_INTB_FSM_ST_NUM)   ;
 localparam PWM_INTB_FSM_IDLE_ST     = PWM_INTB_FSM_ST_W'(0)         ;
 localparam PWM_INTB_FSM_DETECT_0_ST = PWM_INTB_FSM_ST_W'(1)         ;
 localparam PWM_INTB_FSM_DETECT_1_ST = PWM_INTB_FSM_ST_W'(2)         ;
 localparam PWM_INTB_FSM_DETECT_2_ST = PWM_INTB_FSM_ST_W'(3)         ;
+localparam PWM_INTB_FSM_DETECT_3_ST = PWM_INTB_FSM_ST_W'(4)         ;
 //==================================
 //var delcaration
 //==================================
@@ -104,6 +105,15 @@ always_comb begin
             else;
         end
         PWM_INTB_FSM_DETECT_2_ST : begin
+            if(bit_detect_out_vld) begin
+                lv_pwm_intb_nxt_st = PWM_INTB_FSM_DETECT_3_ST;
+            end
+            else if(lv_pwm_detect_end) begin
+                lv_pwm_intb_nxt_st = PWM_INTB_FSM_IDLE_ST;            
+            end
+            else;
+        end
+        PWM_INTB_FSM_DETECT_3_ST : begin
             if(lv_pwm_detect_end) begin
                 lv_pwm_intb_nxt_st = PWM_INTB_FSM_IDLE_ST;            
             end

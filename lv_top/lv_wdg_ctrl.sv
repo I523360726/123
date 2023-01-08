@@ -207,9 +207,6 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_wdg_owt_tx_adc_req <= 1'b0;
     end
-    else if(~i_wdg_owt_en) begin
-        o_wdg_owt_tx_adc_req <= 1'b0;    
-    end
     else if(i_owt_tx_wdg_adc_ack) begin
         o_wdg_owt_tx_adc_req <= 1'b0;    
     end

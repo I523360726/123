@@ -336,7 +336,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_owt_com_en <= 1'b0;
     end
-    else if((lv_ctrl_nxt_st==WAIT_ST) || (lv_ctrl_nxt_st==TEST_ST) || (lv_ctrl_nxt_st==NML_ST) ||
+    else if((lv_ctrl_nxt_st==TEST_ST) || (lv_ctrl_nxt_st==NML_ST) ||
             (lv_ctrl_nxt_st==FAILSAFE_ST) || (lv_ctrl_nxt_st==FAULT_ST) || (lv_ctrl_nxt_st==CFG_ST) ||
             (lv_ctrl_nxt_st==RST_ST) || (lv_ctrl_nxt_st==BIST_ST)) begin
         o_owt_com_en <= 1'b1;
