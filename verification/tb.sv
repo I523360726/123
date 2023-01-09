@@ -143,13 +143,16 @@ end
 assign test_mode = 1'b0; 
 assign spi_start = (spi_cnt==32'd35000) || (spi_cnt==32'd36000) || 
                    (spi_cnt==32'd37000) || (spi_cnt==32'd38000) ||
-                   (spi_cnt==32'd39000) || (spi_cnt==32'd40000) ;
+                   (spi_cnt==32'd39000) || (spi_cnt==32'd40000) || 
+                   (spi_cnt==32'd60000) || (spi_cnt==32'd61000) ;
 assign spi_cmd   = (spi_cnt<32'd36000) ? {1'b1, 7'h08} : {1'b1, 7'h01};
 assign spi_data  = (spi_cnt<32'd36000) ? 8'b1111_1111 : 
                    (spi_cnt<32'd37000) ? 8'b1000_0000 : 
                    (spi_cnt<32'd38000) ? 8'b0000_0010 :
                    (spi_cnt<32'd39000) ? 8'b0000_0100 : 
-                   (spi_cnt<32'd40000) ? 8'b0000_0001 : 8'b0000_0000;
+                   (spi_cnt<32'd40000) ? 8'b0000_0001 : 
+                   (spi_cnt<32'd60000) ? 8'b0000_0000 : 
+                   (spi_cnt<32'd61000) ? 8'b0000_0010 : 8'b0000_1000;
 
 gen_spi_sig #(
     .MODE(0)
