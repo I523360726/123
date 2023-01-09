@@ -9,18 +9,19 @@
 //1.0           2022/11/6     xxxx            Create
 //=============================================================
 module rw_reg #(
-    parameter DW                   = 8          ,
-    parameter AW                   = 8          ,
-    parameter CRC_W                = 8          ,
-    parameter DEFAULT_VAL          = {DW{1'b0}} ,
-    parameter REG_ADDR             = {AW{1'b0}} ,
-    parameter SUPPORT_TEST_MODE_WR = 1'b1       ,
-    parameter SUPPORT_TEST_MODE_RD = 1'b1       ,
-    parameter SUPPORT_CFG_MODE_WR  = 1'b1       ,
-    parameter SUPPORT_CFG_MODE_RD  = 1'b1       ,
-    parameter SUPPORT_SPI_EN_WR    = 1'b1       ,
-    parameter SUPPORT_SPI_EN_RD    = 1'b1       ,
-    parameter SUPPORT_EFUSE_WR     = 1'b1       , 
+    parameter DW                   = 8              ,
+    parameter AW                   = 8              ,
+    parameter CRC_W                = 8              ,
+    parameter DEFAULT_VAL          = {DW{1'b0}}     ,
+    parameter CRC_DEF_VAL          = {CRC_W{1'b0}}  ,
+    parameter REG_ADDR             = {AW{1'b0}}     ,
+    parameter SUPPORT_TEST_MODE_WR = 1'b1           ,
+    parameter SUPPORT_TEST_MODE_RD = 1'b1           ,
+    parameter SUPPORT_CFG_MODE_WR  = 1'b1           ,
+    parameter SUPPORT_CFG_MODE_RD  = 1'b1           ,
+    parameter SUPPORT_SPI_EN_WR    = 1'b1           ,
+    parameter SUPPORT_SPI_EN_RD    = 1'b1           ,
+    parameter SUPPORT_EFUSE_WR     = 1'b1           , 
     parameter END_OF_LIST          = 1
 )( 
     input  logic                i_wen                   ,
@@ -59,7 +60,7 @@ assign ren = i_ren & hit & ((i_test_st_reg_en & SUPPORT_TEST_MODE_RD) | (i_cfg_s
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_reg_data <= DEFAULT_VAL;
-        crc_data   <= {CRC_W{1'b0}};
+        crc_data   <= CRC_DEF_VAL;
     end
     else begin
         o_reg_data <= wen ? i_wdata : o_reg_data;
