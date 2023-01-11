@@ -15,12 +15,14 @@ module signal_detect #(
     parameter MODE          = 1         ,//0: pwm mode; 1: owt mode.           
     parameter END_OF_LIST   = 1
 )( 
-    input  logic           i_vld        ,
-    input  logic           i_vld_data   ,
-    output logic           o_vld        ,
-    output logic           o_vld_data   ,
-    input  logic           i_clk        ,
-    input  logic           i_rst_n
+    input  logic                i_vld        ,
+    input  logic                i_vld_data   ,
+    input  logic [CNT_W-1:  0]  i_dn_th      ,
+    input  logic [CNT_W-1:  0]  i_up_th      ,
+    output logic                o_vld        ,
+    output logic                o_vld_data   ,
+    input  logic                i_clk        ,
+    input  logic                i_rst_n
 );
 //==================================
 //local param delcaration
@@ -65,7 +67,7 @@ generate
         end
     end
     else begin: OWT_MODE
-        assign detect_end = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=DN_TH) & (cnt<UP_TH);
+        assign detect_end = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=i_dn_th) & (cnt<i_up_th);
 
         always_ff@(posedge i_clk or negedge i_rst_n) begin
             if(~i_rst_n) begin
