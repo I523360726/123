@@ -60,36 +60,39 @@ module hv_reg_access_ctrl #(
 //==================================
 //local param delcaration
 //==================================
-
+parameter MAX_OWT_TX_CYC_NUM = 512                        ;
+parameter LANCH_LST_TX_CNT_W = $clog2(MAX_OWT_TX_CYC_NUM) ;
 //==================================
 //var delcaration
 //==================================
 logic                                       owt_rx_reg_wen              ;
 logic                                       owt_rx_reg_ren              ;
-logic [REG_AW-1:            0]              owt_rx_reg_addr             ;
-logic [REG_DW-1:            0]              owt_rx_reg_wdata            ;
-logic [REG_CRC_W-1:         0]              owt_rx_reg_wcrc             ; 
+logic [REG_AW-1:                0]          owt_rx_reg_addr             ;
+logic [REG_DW-1:                0]          owt_rx_reg_wdata            ;
+logic [REG_CRC_W-1:             0]          owt_rx_reg_wcrc             ; 
 
 logic                                       spi_reg_wen                 ;
 logic                                       spi_reg_ren                 ;
 
 logic                                       owt_grant                   ;
-logic [2:                   0]              owt_grant_ff                ;
+logic [2:                       0]          owt_grant_ff                ;
 logic                                       wdg_scan_grant              ;
-logic [2:                   0]              wdg_scan_grant_ff           ;
+logic [2:                       0]          wdg_scan_grant_ff           ;
 logic                                       wdg_scan_grant_mask         ;
 logic                                       spi_grant                   ;
-logic [2:                   0]              spi_grant_ff                ;
+logic [2:                       0]          spi_grant_ff                ;
 logic                                       spi_grant_mask              ;
 
 logic                                       owt_wr_ack                  ;
 logic                                       owt_rd_ack                  ;
-logic [REG_DW-1:            0]              rac_spi_data                ;
-logic [REG_AW-1:            0]              rac_spi_addr                ;
-logic [REG_AW-1:            0]              rac_reg_addr_ff             ;  
+logic [REG_DW-1:                0]          rac_spi_data                ;
+logic [REG_AW-1:                0]          rac_spi_addr                ;
+logic [REG_AW-1:                0]          rac_reg_addr_ff             ;  
 logic                                       lanch_last_owt_tx           ;  
 
 logic                                       tx_cmd_lock                 ;
+logic [LANCH_LST_TX_CNT_W-1:    0]          lanch_lst_tx_cnt            ;
+logic                                       lanch_lst_tx_flag           ;
 //==================================
 //main code
 //==================================
@@ -276,10 +279,35 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        lanch_lst_tx_flag <= 1'b0;
+    end
+    else if(lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) begin
+        lanch_lst_tx_flag <= 1'b0;
+    end
+    else if(i_owt_rx_rac_vld & i_owt_rx_rac_status) begin
+        lanch_lst_tx_flag <= 1'b1;        
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
+    end
+    else if(lanch_lst_tx_flag) begin
+        lanch_lst_tx_cnt <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) ? LANCH_LST_TX_CNT_W'(0) : (lanch_lst_tx_cnt+1'b1);
+    end
+    else begin
+        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         lanch_last_owt_tx <= 1'b0;
     end
     else begin
-        lanch_last_owt_tx <= i_owt_rx_rac_vld & i_owt_rx_rac_status;
+        lanch_last_owt_tx <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1));
     end
 end
 

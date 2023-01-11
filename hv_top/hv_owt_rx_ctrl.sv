@@ -66,6 +66,9 @@ logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
 logic                               rx_start            ;
 logic                               lv_hv_owt_rx        ;
+logic [CNT_OWT_EXT_CYC_W-1:     0]  dn_th               ;
+logic [CNT_OWT_EXT_CYC_W-1:     0]  up_th               ;
+logic                               sync_tail_flag      ;
 //==================================
 //main code
 //==================================
@@ -78,7 +81,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign rx_start = rx_vld_lock & rx_vld & rx_vld_data & ~rx_vld_data_lock;
+assign rx_start         = rx_vld_lock & rx_vld & rx_vld_data & ~rx_vld_data_lock;
+assign sync_tail_flag   = rx_vld_lock & rx_vld & ~rx_vld_data &  rx_vld_data_lock;
 
 always_comb begin
     owt_rx_nxt_st = owt_rx_cur_st;
@@ -160,14 +164,24 @@ gnrl_sync #(
     .i_rst_n    (i_rst_n        )
 );
 
+assign dn_th = ((owt_rx_cur_st==OWT_SYNC_HEAD_ST) | (owt_rx_cur_st==OWT_CMD_ST) |
+                 (owt_rx_cur_st==OWT_ADC_DATA_ST) | (owt_rx_cur_st==OWT_NML_DATA_ST) | 
+                 (owt_rx_cur_st==OWT_CRC_ST)) ? (OWT_EXT_CYC_NUM-3) : (2*OWT_EXT_CYC_NUM-3);
+
+assign up_th = ((owt_rx_cur_st==OWT_SYNC_HEAD_ST) | (owt_rx_cur_st==OWT_CMD_ST) |
+                 (owt_rx_cur_st==OWT_ADC_DATA_ST) | (owt_rx_cur_st==OWT_NML_DATA_ST) | 
+                 (owt_rx_cur_st==OWT_CRC_ST)) ? (OWT_EXT_CYC_NUM-2) : (2*OWT_EXT_CYC_NUM-2);
+
 signal_detect #(
     .CNT_W(CNT_OWT_EXT_CYC_W    ),
-    .DN_TH(OWT_EXT_CYC_NUM-2    ),
-    .UP_TH(OWT_EXT_CYC_NUM-1    ),
+    .DN_TH(OWT_EXT_CYC_NUM-3    ),
+    .UP_TH(OWT_EXT_CYC_NUM-2    ),
     .MODE (1                    )
 ) U_OWT_RX_SIGNAL_DETECT(
     .i_vld        (1'b1          ),
     .i_vld_data   (lv_hv_owt_rx  ),
+    .i_dn_th      (dn_th         ),
+    .i_up_th      (up_th         ),    
     .o_vld        (rx_vld        ),
     .o_vld_data   (rx_vld_data   ),
     .i_clk        (i_clk         ),
@@ -202,15 +216,16 @@ assign rx_mcst_vld_one  = rx_vld & rx_vld_lock & ~rx_vld_data &  rx_vld_data_loc
 assign rx_mcst_vld_zero = rx_vld & rx_vld_lock &  rx_vld_data & ~rx_vld_data_lock & rx_gen_mcst_code; //posedge 0->1
 assign rx_mcst_invld    = rx_vld & rx_vld_lock & ~(rx_vld_data ^ rx_vld_data_lock)& rx_gen_mcst_code;
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {OWT_TAIL_BIT_NUM{1'b0}};
-    end
-    else if(rx_vld & ((owt_rx_cur_st==OWT_SYNC_TAIL_ST) | (owt_rx_cur_st==OWT_END_TAIL_ST))) begin
-        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {rx_sync_tail_bit[OWT_TAIL_BIT_NUM-2: 0], rx_vld_data}; 
-    end
-    else;
-end
+//always_ff@(posedge i_clk or negedge i_rst_n) begin
+//    if(~i_rst_n) begin
+//        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {OWT_TAIL_BIT_NUM{1'b0}};
+//    end
+//    else if(rx_vld & ((owt_rx_cur_st==OWT_SYNC_TAIL_ST) | (owt_rx_cur_st==OWT_END_TAIL_ST))) begin
+//        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {rx_sync_tail_bit[OWT_TAIL_BIT_NUM-2: 0], rx_vld_data}; 
+//    end
+//    else;
+//end
+assign rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] = 4'b1100;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -246,7 +261,7 @@ crc8_serial U_CRC8_CHK(
     .i_data            (crc8_chk_bit        ),
     .i_new_calc        (crc8_chk_start      ),
     .o_vld_crc         (crc8_chk_o_crc      ),
-    .i_clk	           (i_clk               ),
+    .i_clk             (i_clk               ),
     .i_rst_n           (i_rst_n             )
 );
 
@@ -267,7 +282,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if(rx_mcst_vld_zero & (owt_rx_cur_st==OWT_SYNC_HEAD_ST) & (rx_cnt_bit==(OWT_SYNC_BIT_NUM-2))) begin
         rx_bit_done <= 1'b1;
     end
-    else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_TAIL_ST) & (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1))) begin
+    else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_TAIL_ST) & sync_tail_flag) begin
         rx_bit_done <= 1'b1;
     end
     else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_CMD_ST) & (rx_cnt_bit==(OWT_CMD_BIT_NUM-1))) begin
@@ -282,7 +297,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_CRC_ST) & (rx_cnt_bit==(OWT_CRC_BIT_NUM-1))) begin
         rx_bit_done <= 1'b1;
     end
-    else if(rx_vld & (owt_rx_cur_st==OWT_END_TAIL_ST) & (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1))) begin
+    else if(rx_vld & (owt_rx_cur_st==OWT_END_TAIL_ST) & sync_tail_flag) begin
         rx_bit_done <= 1'b1;
     end
     else begin
@@ -301,8 +316,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else;
     end
     else if(owt_rx_cur_st==OWT_SYNC_TAIL_ST) begin
-        if(rx_vld) begin
-            rx_cnt_bit <= (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1);   
+        if(sync_tail_flag) begin
+            rx_cnt_bit <= CNT_OWT_MAX_W'(0);   
         end
         else;
     end
@@ -331,8 +346,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else;
     end
     else if(owt_rx_cur_st==OWT_END_TAIL_ST) begin
-        if(rx_vld) begin
-            rx_cnt_bit <= (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1); 
+        if(sync_tail_flag) begin
+            rx_cnt_bit <= CNT_OWT_MAX_W'(0); 
         end
         else;
     end

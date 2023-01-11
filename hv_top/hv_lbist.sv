@@ -12,7 +12,7 @@ module hv_lbist #(
     `include "hv_param.svh"
     parameter END_OF_LIST          = 1
 )( 
-    input  logic 		   i_bist_en                ,
+    input  logic           i_bist_en                ,
 
     input  logic           i_owt_rx_ack             ,
     input  logic           i_owt_rx_status          ,
@@ -50,38 +50,38 @@ logic [BIST_TMO_CNT_W-1:    0]  bist_tmo_cnt        ;
 //scan reg
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    scan_cnt <= SCAN_CNT_W'(0);
-	end
-    if(i_bist_en) begin
-  	    if(i_scan_reg_bist_ack) begin
-	        scan_cnt <= (scan_cnt==HV_SCAN_REG_NUM) ? scan_cnt : (scan_cnt+1'b1);
-	    end
+        scan_cnt <= SCAN_CNT_W'(0);
+    end
+    else if(i_bist_en) begin
+        if(i_scan_reg_bist_ack) begin
+            scan_cnt <= (scan_cnt==HV_SCAN_REG_NUM) ? scan_cnt : (scan_cnt+1'b1);
+        end
         else;
     end
     else begin
-	    scan_cnt <= SCAN_CNT_W'(0);    
+        scan_cnt <= SCAN_CNT_W'(0);    
     end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    o_bist_scan_reg_req <= 1'b0;
-	end
+        o_bist_scan_reg_req <= 1'b0;
+    end
     else if(i_scan_reg_bist_ack) begin
-	    o_bist_scan_reg_req <= 1'b0;    
+        o_bist_scan_reg_req <= 1'b0;    
     end
-  	else if(i_bist_en & (scan_cnt<HV_SCAN_REG_NUM)) begin
-	    o_bist_scan_reg_req <= 1'b1;
-	end
+    else if(i_bist_en & (scan_cnt<HV_SCAN_REG_NUM)) begin
+        o_bist_scan_reg_req <= 1'b1;
+    end
     else begin
-	    o_bist_scan_reg_req <= 1'b0;
+        o_bist_scan_reg_req <= 1'b0;
     end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    scan_reg_bist_err <= 1'b0;
-	end
+        scan_reg_bist_err <= 1'b1;
+    end
     else if(i_bist_en) begin
         if(i_scan_reg_bist_ack & i_scan_reg_bist_err) begin
             scan_reg_bist_err <= 1'b1;
@@ -96,8 +96,8 @@ assign o_hv_scan_bist_rult = ~scan_reg_bist_err;
 //owt
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    owt_rx_ok_cnt <= BIST_OWT_RX_CNT_W'(0);
-	end
+        owt_rx_ok_cnt <= BIST_OWT_RX_CNT_W'(0);
+    end
     else if(i_bist_en) begin
         if(i_owt_rx_ack & ~i_owt_rx_status) begin
             owt_rx_ok_cnt <= owt_rx_ok_cnt+1'b1;
@@ -105,44 +105,44 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else;
     end
     else begin
-	    owt_rx_ok_cnt <= BIST_OWT_RX_CNT_W'(0);
+        owt_rx_ok_cnt <= BIST_OWT_RX_CNT_W'(0);
     end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    bist_tmo_cnt <= BIST_TMO_CNT_W'(0);
-	end
-  	else if(i_bist_en) begin
-	    bist_tmo_cnt <= (bist_tmo_cnt==(BIST_TMO_TH-1)) ? bist_tmo_cnt : (bist_tmo_cnt+1'b1);
-	end
+        bist_tmo_cnt <= BIST_TMO_CNT_W'(0);
+    end
+    else if(i_bist_en) begin
+        bist_tmo_cnt <= (bist_tmo_cnt==(BIST_TMO_TH-1)) ? bist_tmo_cnt : (bist_tmo_cnt+1'b1);
+    end
     else begin
-	    bist_tmo_cnt <= BIST_TMO_CNT_W'(0);    
+        bist_tmo_cnt <= BIST_TMO_CNT_W'(0);    
     end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-	    o_hv_owt_bist_rult <= 1'b1;
-	end
-  	else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
+        o_hv_owt_bist_rult <= 1'b1;
+    end
+    else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
         if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM)) begin
-	        o_hv_owt_bist_rult <= 1'b0;
+            o_hv_owt_bist_rult <= 1'b0;
         end
         else begin
-	        o_hv_owt_bist_rult <= 1'b1;            
+            o_hv_owt_bist_rult <= 1'b1;            
         end
-	end
+    end
     else;
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_hv_bist_done <= 1'b0;
-	end
-  	else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
+    end
+    else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
         o_hv_bist_done <= 1'b1;  
-	end
+    end
     else begin
         o_hv_bist_done <= 1'b0;
     end

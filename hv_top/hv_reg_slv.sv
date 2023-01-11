@@ -294,7 +294,7 @@ assign efuse_remote_reg_rd = spi_reg_ren &  hit_rd_efuse;
 assign o_reg_status1 = reg_status1 & ~reg_mask1 ;
 assign o_reg_status2 = reg_status2 & ~reg_mask2 ;
 
-com_reg_bank U_LV_COM_REG_BANK(
+com_reg_bank U_HV_COM_REG_BANK(
     .i_spi_reg_ren                 (spi_reg_ren             ),
     .i_spi_reg_wen                 (spi_reg_wen             ),
     .i_spi_reg_addr                (spi_reg_addr            ),
