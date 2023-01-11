@@ -27,7 +27,7 @@ module lv_owt_tx_ctrl #(
 
     input  logic                            i_owt_rx_ack        ,
     
-    input  logic                            i_clk	            ,
+    input  logic                            i_clk               ,
     input  logic                            i_rst_n
 );
 //==================================

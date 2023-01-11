@@ -120,8 +120,8 @@ lv_core U_LV_CORE(
     .i_scan_mode                     (scan_mode                 ),
 
     .o_intb_n                        (intb_o                    ),
-    .o_dgt_ang_pwm_en                (fsc_en                    ),
-    .o_dgt_ang_fsc_en                (pwm_en                    ),
+    .o_dgt_ang_pwm_en                (pwm_en                    ),
+    .o_dgt_ang_fsc_en                (fsc_en                    ),
 
     .i_lv_vsup_uv_n                  (uv_vsup                   ), 
     .i_lv_pwm_dt                     (dt_flag                   ), 

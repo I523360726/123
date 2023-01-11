@@ -48,7 +48,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        lv_abist_fail <= 1'b0;
+        lv_abist_fail <= 1'b1;
     end
     else if(i_bist_en) begin
         if(i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM)) begin

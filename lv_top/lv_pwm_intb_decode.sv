@@ -161,6 +161,8 @@ signal_detect #(
 ) U_BIT_DETECT ( 
     .i_vld        (1'b1                 ),
     .i_vld_data   (hv_pwm_intb_n        ),
+    .i_dn_th      (4'b0                 ),
+    .i_up_th      (4'b0                 ),
     .o_vld        (bit_detect_out_vld   ),
     .o_vld_data   (bit_detect_out       ),
     .i_clk        (i_clk                ),
