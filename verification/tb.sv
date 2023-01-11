@@ -15,7 +15,8 @@ module tb();
 //==================================
 //local param delcaration
 //==================================
-real        CYC_48MHZ           = (1000/48)             ;
+real        CYC_43MHZ           = (1000/43)             ;
+real        CYC_53MHZ           = (1000/53)             ;
 real        CYC_10MHZ           = (1000/10)             ;
 real        RST_TIME            = 400                   ; 
 //==================================
@@ -100,7 +101,7 @@ initial begin
     lv_clk = $urandom%2;
     #($urandom%60);
     forever begin
-        #(CYC_48MHZ/2) lv_clk = ~lv_clk;
+        #(CYC_43MHZ/2) lv_clk = ~lv_clk;
     end
 end
 
@@ -108,7 +109,7 @@ initial begin
     hv_clk = $urandom%2;
     #($urandom%57);
     forever begin
-        #(CYC_48MHZ/2) hv_clk = ~hv_clk;
+        #(CYC_53MHZ/2) hv_clk = ~hv_clk;
     end
 end
 
