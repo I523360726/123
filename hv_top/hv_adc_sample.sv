@@ -143,7 +143,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
     else begin
         o_adc1_equ_data <= adc1_equ_data_vld ? adc1_equ_data[TMP_DW-1 -: ADC_DW] : o_adc1_equ_data;
-        o_adc1_equ_data <= adc2_equ_data_vld ? adc2_equ_data[TMP_DW-1 -: ADC_DW] : o_adc2_equ_data;
+        o_adc2_equ_data <= adc2_equ_data_vld ? adc2_equ_data[TMP_DW-1 -: ADC_DW] : o_adc2_equ_data;
     end
 end
 // synopsys translate_off    
