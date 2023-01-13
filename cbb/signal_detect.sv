@@ -41,7 +41,7 @@ logic               detect_hold     ;
 //==================================
 //main code
 //==================================
-assign detect_start     = i_vld & (cnt==CNT_W'(0));
+assign detect_start     = i_vld & last_vld & (i_vld_data!=last_vld_data);
 assign detect_continue  = i_vld & last_vld & (i_vld_data==last_vld_data);
 generate
     if(MODE==0) begin: PWM_MODE
@@ -52,13 +52,13 @@ generate
             if(~i_rst_n) begin
                 cnt <= CNT_W'(0);
             end
-            else if(detect_end) begin
+            else if(detect_end | detect_start) begin
                 cnt <= CNT_W'(1);
             end
 	        else if(detect_hold) begin
                 cnt <= (UP_TH+1'b1);
 	        end
-            else if(detect_start | detect_continue) begin
+            else if(detect_continue) begin
                 cnt <= cnt + 1'b1;
             end
             else begin
@@ -76,7 +76,10 @@ generate
             else if(detect_end) begin
                 cnt <= CNT_W'(0);
             end
-            else if(detect_start | detect_continue) begin
+            else if(detect_start) begin
+                cnt <= CNT_W'(1);
+            end
+            else if(detect_continue) begin
                 cnt <= cnt + 1'b1;
             end
             else begin
