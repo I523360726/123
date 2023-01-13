@@ -1,6 +1,6 @@
 #!/usr/bin/csh
 
-setenv PRJ_ROOT /home/Data/hw32/ZXJ/123-main
+setenv PRJ_ROOT ..
 
 verdi   +v2k \
         -sverilog \
