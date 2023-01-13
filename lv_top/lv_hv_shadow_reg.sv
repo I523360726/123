@@ -50,7 +50,8 @@ logic [2*ADC_DW-1:  0] reg_wdata            ;
 logic                  hit_hv_ang_reg       ;  
 logic                  hit_hv_ang_reg_vld   ; 
 logic                  hit_hv_dgt_reg       ;
-logic                  hit_hv_dgt_reg_vld   ;           
+logic                  hit_hv_dgt_reg_vld   ;
+logic                  hit_hv_dgt_reg_vld_ff;
 //==================================
 //main code
 //==================================
@@ -82,10 +83,12 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_hv_dgt_reg_vld <= 1'b0;
+        hit_hv_dgt_reg_vld_ff <= 1'b0;
+        o_hv_dgt_reg_vld      <= 1'b0;
     end
     else begin
-        o_hv_dgt_reg_vld <= hit_hv_dgt_reg_vld;
+        hit_hv_dgt_reg_vld_ff <= hit_hv_dgt_reg_vld   ;
+        o_hv_dgt_reg_vld      <= hit_hv_dgt_reg_vld_ff;
     end
 end
 
