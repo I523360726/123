@@ -80,7 +80,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        scan_reg_bist_err <= 1'b1;
+        scan_reg_bist_err <= 1'b0;
     end
     else if(i_bist_en) begin
         if(i_scan_reg_bist_ack & i_scan_reg_bist_err) begin
@@ -91,7 +91,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-assign o_hv_scan_bist_rult = ~scan_reg_bist_err;
+assign o_hv_scan_bist_rult = scan_reg_bist_err;
 
 //owt
 always_ff@(posedge i_clk or negedge i_rst_n) begin
@@ -123,7 +123,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_hv_owt_bist_rult <= 1'b1;
+        o_hv_owt_bist_rult <= 1'b0;
     end
     else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
         if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM)) begin
