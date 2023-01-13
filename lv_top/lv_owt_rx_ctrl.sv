@@ -65,14 +65,69 @@ logic [OWT_COM_ERR_CNT_W-1:     0]  owt_com_err_cnt     ;
 logic [1:                       0]  owt_com_err_add_sel ;
 logic [1:                       0]  owt_com_cor_sub_sel ;
 logic                               owt_com_err         ;
-logic                               rx_start            ;
+logic                               rx_pos              ;
+logic                               rx_neg              ;
 logic                               hv_lv_owt_rx        ;
+logic                               hv_lv_owt_rx_ff     ;
 logic [CNT_OWT_EXT_CYC_W-1:     0]  dn_th               ;
 logic [CNT_OWT_EXT_CYC_W-1:     0]  up_th               ;
-logic                               sync_tail_flag      ;
+logic [CNT_OWT_EXT_CYC_W-1:     0]  symbol_cyc_cnt      ;
+logic [CNT_OWT_EXT_CYC_W-1:     0]  symbol_cyc_cnt_lock ;
+logic [DLY_RX_ACK_CNT_W-1:      0]  dly_rx_ack_cnt      ;
+logic                               dly_rx_ack_flag     ;
+logic                               dly_rx_ack          ;
+logic                               measure_symbol_flag ;
 //==================================
 //main code
 //==================================
+assign rx_pos =  hv_lv_owt_rx & ~hv_lv_owt_rx_ff;
+assign rx_neg = ~hv_lv_owt_rx &  hv_lv_owt_rx_ff;
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        measure_symbol_flag <= 1'b0;
+    end
+    else if(owt_rx_cur_st==OWT_SYNC_HEAD_ST) begin
+        if(rx_pos) begin
+            measure_symbol_flag <= 1'b1;
+        end
+        else if(rx_neg) begin
+            measure_symbol_flag <= 1'b0;            
+        end
+        else;
+    end
+    else begin
+        measure_symbol_flag <= 1'b0;        
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        symbol_cyc_cnt <= CNT_OWT_EXT_CYC_W'(1);
+    end
+    else if(measure_symbol_flag) begin
+        symbol_cyc_cnt <= rx_neg ? CNT_OWT_EXT_CYC_W'(1) : (symbol_cyc_cnt+1'b1);
+    end
+    else begin
+        symbol_cyc_cnt <= CNT_OWT_EXT_CYC_W'(1);
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        symbol_cyc_cnt_lock <= CNT_OWT_EXT_CYC_W'(0);
+    end
+    else if(rx_neg & (owt_rx_cur_st==OWT_SYNC_HEAD_ST)) begin
+        if(symbol_cyc_cnt_lock>=symbol_cyc_cnt) begin
+            symbol_cyc_cnt_lock <= symbol_cyc_cnt_lock;        
+        end
+        else begin
+            symbol_cyc_cnt_lock <= symbol_cyc_cnt; 
+        end
+    end
+    else;
+end
+
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         owt_rx_cur_st <= OWT_FSM_ST_W'(0);
@@ -82,23 +137,24 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign rx_start         = rx_vld_lock & rx_vld &  rx_vld_data & ~rx_vld_data_lock;
-assign sync_tail_flag   = rx_vld_lock & rx_vld & ~rx_vld_data &  rx_vld_data_lock;
-
 always_comb begin
     owt_rx_nxt_st = owt_rx_cur_st;
     case(owt_rx_cur_st)
         OWT_IDLE_ST : begin 
-            if(rx_start) begin
+            if(rx_pos) begin
                 owt_rx_nxt_st = OWT_SYNC_HEAD_ST;
             end
             else;
         end
         OWT_SYNC_HEAD_ST : begin
-            if(rx_mcst_vld_one | rx_mcst_invld) begin
-                owt_rx_nxt_st = OWT_IDLE_ST;
-            end
-            else if(rx_bit_done) begin
+            //if(rx_mcst_vld_one | rx_mcst_invld) begin
+            //    owt_rx_nxt_st = OWT_IDLE_ST;
+            //end
+            //else if(rx_bit_done) begin
+            //    owt_rx_nxt_st = OWT_SYNC_TAIL_ST;    
+            //end
+            //else;
+            if(rx_bit_done) begin
                 owt_rx_nxt_st = OWT_SYNC_TAIL_ST;    
             end
             else;
@@ -174,18 +230,22 @@ gnrl_sync #(
     .i_rst_n    (i_rst_n        )
 );
 
-assign dn_th = ((owt_rx_cur_st==OWT_SYNC_HEAD_ST) | (owt_rx_cur_st==OWT_CMD_ST) |
-                 (owt_rx_cur_st==OWT_ADC_DATA_ST) | (owt_rx_cur_st==OWT_NML_DATA_ST) | 
-                 (owt_rx_cur_st==OWT_CRC_ST)) ? (OWT_EXT_CYC_NUM-3) : (2*OWT_EXT_CYC_NUM-3);
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        hv_lv_owt_rx_ff <= 1'b0;
+    end
+    else begin
+        hv_lv_owt_rx_ff <= hv_lv_owt_rx;
+    end
+end
 
-assign up_th = ((owt_rx_cur_st==OWT_SYNC_HEAD_ST) | (owt_rx_cur_st==OWT_CMD_ST) |
-                 (owt_rx_cur_st==OWT_ADC_DATA_ST) | (owt_rx_cur_st==OWT_NML_DATA_ST) | 
-                 (owt_rx_cur_st==OWT_CRC_ST)) ? (OWT_EXT_CYC_NUM-2) : (2*OWT_EXT_CYC_NUM-2);
+assign dn_th = (symbol_cyc_cnt_lock<=2) ? CNT_OWT_EXT_CYC_W'(2) : (symbol_cyc_cnt_lock-2);
+assign up_th = (symbol_cyc_cnt_lock<=2) ? CNT_OWT_EXT_CYC_W'(3) : (symbol_cyc_cnt_lock-1);
 
 signal_detect #(
     .CNT_W(CNT_OWT_EXT_CYC_W    ),
-    .DN_TH(OWT_EXT_CYC_NUM-3    ),
-    .UP_TH(OWT_EXT_CYC_NUM-2    ),
+    .DN_TH(OWT_EXT_CYC_NUM-2    ),
+    .UP_TH(OWT_EXT_CYC_NUM-1    ),
     .MODE (1                    )
 ) U_OWT_RX_SIGNAL_DETECT(
     .i_vld        (1'b1          ),
@@ -213,7 +273,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         rx_gen_mcst_code <= 1'b0;
     end
-    else if((owt_rx_cur_st==OWT_SYNC_HEAD_ST) | (owt_rx_cur_st==OWT_CMD_ST) |
+    else if((owt_rx_cur_st==OWT_CMD_ST) |
             (owt_rx_cur_st==OWT_ADC_DATA_ST) | (owt_rx_cur_st==OWT_NML_DATA_ST) | (owt_rx_cur_st==OWT_CRC_ST)) begin
         rx_gen_mcst_code <= rx_vld ? ~rx_gen_mcst_code : rx_gen_mcst_code;
     end
@@ -226,16 +286,15 @@ assign rx_mcst_vld_one  = rx_vld & rx_vld_lock & ~rx_vld_data &  rx_vld_data_loc
 assign rx_mcst_vld_zero = rx_vld & rx_vld_lock &  rx_vld_data & ~rx_vld_data_lock & rx_gen_mcst_code; //posedge 0->1
 assign rx_mcst_invld    = rx_vld & rx_vld_lock & ~(rx_vld_data ^ rx_vld_data_lock)& rx_gen_mcst_code;
 
-//always_ff@(posedge i_clk or negedge i_rst_n) begin
-//    if(~i_rst_n) begin
-//        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {OWT_TAIL_BIT_NUM{1'b0}};
-//    end
-//    else if(rx_vld & ((owt_rx_cur_st==OWT_SYNC_TAIL_ST) | (owt_rx_cur_st==OWT_END_TAIL_ST))) begin
-//        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {rx_sync_tail_bit[OWT_TAIL_BIT_NUM-2: 0], rx_vld_data}; 
-//    end
-//    else;
-//end
-assign rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] = 4'b1100;
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {OWT_TAIL_BIT_NUM{1'b0}};
+    end
+    else if(rx_vld & ((owt_rx_cur_st==OWT_SYNC_TAIL_ST) | (owt_rx_cur_st==OWT_END_TAIL_ST))) begin
+        rx_sync_tail_bit[OWT_TAIL_BIT_NUM-1: 0] <= {rx_sync_tail_bit[OWT_TAIL_BIT_NUM-2: 0], rx_vld_data}; 
+    end
+    else;
+end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -289,10 +348,10 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         rx_bit_done <= 1'b0;
     end
-    else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_SYNC_HEAD_ST) & (rx_cnt_bit==(OWT_SYNC_BIT_NUM-2))) begin
+    else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_HEAD_ST) & (rx_cnt_bit==(OWT_SYNC_BIT_NUM-1))) begin
         rx_bit_done <= 1'b1;
     end
-    else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_TAIL_ST) & sync_tail_flag) begin
+    else if(rx_vld & (owt_rx_cur_st==OWT_SYNC_TAIL_ST) & (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1))) begin
         rx_bit_done <= 1'b1;
     end
     else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_CMD_ST) & (rx_cnt_bit==(OWT_CMD_BIT_NUM-1))) begin
@@ -307,7 +366,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if((rx_mcst_vld_one | rx_mcst_vld_zero) & (owt_rx_cur_st==OWT_CRC_ST) & (rx_cnt_bit==(OWT_CRC_BIT_NUM-1))) begin
         rx_bit_done <= 1'b1;
     end
-    else if(rx_vld & (owt_rx_cur_st==OWT_END_TAIL_ST) & sync_tail_flag) begin
+    else if(rx_vld & (owt_rx_cur_st==OWT_END_TAIL_ST) & (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1))) begin
         rx_bit_done <= 1'b1;
     end
     else begin
@@ -320,14 +379,14 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         rx_cnt_bit <= CNT_OWT_MAX_W'(0);
     end
     else if(owt_rx_cur_st==OWT_SYNC_HEAD_ST) begin
-        if(rx_mcst_vld_zero) begin
-            rx_cnt_bit <= (rx_cnt_bit==(OWT_SYNC_BIT_NUM-2)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1);
+        if(rx_pos | rx_bit_done) begin
+            rx_cnt_bit <= (rx_cnt_bit==(OWT_SYNC_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1);
         end
         else;
     end
     else if(owt_rx_cur_st==OWT_SYNC_TAIL_ST) begin
-        if(sync_tail_flag) begin
-            rx_cnt_bit <= CNT_OWT_MAX_W'(0);   
+        if(rx_vld) begin
+            rx_cnt_bit <= (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1);
         end
         else;
     end
@@ -356,8 +415,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else;
     end
     else if(owt_rx_cur_st==OWT_END_TAIL_ST) begin
-        if(sync_tail_flag) begin
-            rx_cnt_bit <= CNT_OWT_MAX_W'(0); 
+        if(rx_vld) begin
+            rx_cnt_bit <= (rx_cnt_bit==(OWT_TAIL_BIT_NUM-1)) ? CNT_OWT_MAX_W'(0) : (rx_cnt_bit+1'b1);
         end
         else;
     end
@@ -366,14 +425,14 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign owt_rx_ack   = (owt_rx_cur_st != OWT_IDLE_ST) & (owt_rx_nxt_st==OWT_IDLE_ST);
+assign owt_rx_ack = (owt_rx_cur_st != OWT_IDLE_ST) & (owt_rx_nxt_st==OWT_IDLE_ST);
                     
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_owt_rx_wdg_rsp <= 1'b0;
     end
     else begin
-        o_owt_rx_wdg_rsp <= owt_rx_ack;
+        o_owt_rx_wdg_rsp <= (owt_rx_ack & ~owt_rx_status) | dly_rx_ack;
     end
 end
 
@@ -382,7 +441,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_rx_ack <= 1'b0;
     end
     else begin
-        o_owt_rx_ack <= owt_rx_ack;
+        o_owt_rx_ack <= (owt_rx_ack & ~owt_rx_status) | dly_rx_ack;
     end
 end
 
@@ -395,7 +454,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_rx_status <= 1'b0;
     end
     else begin
-        o_owt_rx_status <= owt_rx_status;
+        o_owt_rx_status <= dly_rx_ack ? 1'b1 : 1'b0;
     end
 end
 
@@ -443,6 +502,35 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_owt_com_err <= 1'b0;
     end
 end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        dly_rx_ack_flag <= 1'b0;
+    end
+    else if(dly_rx_ack_cnt==(MAX_OWT_RX_CYC_NUM-1)) begin
+        dly_rx_ack_flag <= 1'b0;
+    end
+    else if(owt_rx_ack & owt_rx_status) begin
+        dly_rx_ack_flag <= 1'b1;        
+    end
+    else;
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        dly_rx_ack_cnt <= DLY_RX_ACK_CNT_W'(0);
+    end
+    else if(dly_rx_ack_flag) begin
+        dly_rx_ack_cnt <= (dly_rx_ack_cnt==(MAX_OWT_RX_CYC_NUM-1)) ? DLY_RX_ACK_CNT_W'(0) : (dly_rx_ack_cnt+1'b1);
+    end
+    else begin
+        dly_rx_ack_cnt <= DLY_RX_ACK_CNT_W'(0);
+    end
+end
+
+
+assign dly_rx_ack = (dly_rx_ack_cnt==(MAX_OWT_RX_CYC_NUM-1));
+
 
 // synopsys translate_off    
 //==================================

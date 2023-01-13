@@ -156,7 +156,7 @@ gnrl_sync #(
 signal_detect #(
     .CNT_W (4       ) ,
     .DN_TH (4'(4)   ) ,
-    .UP_TH (4'(8)   ) ,
+    .UP_TH (4'(12)  ) ,
     .MODE  (0       ) 
 ) U_BIT_DETECT ( 
     .i_vld        (1'b1                 ),
