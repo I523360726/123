@@ -124,7 +124,7 @@ generate;
             if(~i_rst_n) begin
                 bist_status[i] <= 1'b1;
             end
-              else if(i_bist_en & bist_detect_sig[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) begin
+            else if(i_bist_en & bist_detect_sig[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) begin
                 bist_status[i] <= 1'b0;
             end
             else;
@@ -144,12 +144,12 @@ generate;
     end
 endgenerate
 
-assign o_bist_hv_ov_status      = bist_status[0] ;
-assign o_bist_hv_ot_status      = bist_status[1] ;
-assign o_bist_hv_opscod_status  = bist_status[2] ;
-assign o_bist_hv_oc_status      = bist_status[3] ;
-assign o_bist_hv_sc_status      = bist_status[4] ;
-assign o_bist_hv_adc_status     = bist_status[5] ;
+assign o_bist_hv_ov_status      = ~bist_status[0] ;
+assign o_bist_hv_ot_status      = ~bist_status[1] ;
+assign o_bist_hv_opscod_status  = ~bist_status[2] ;
+assign o_bist_hv_oc_status      = ~bist_status[3] ;
+assign o_bist_hv_sc_status      = ~bist_status[4] ;
+assign o_bist_hv_adc_status     = ~bist_status[5] ;
 
 assign o_bist_hv_ov             = bist_dgt_ang[0];
 assign o_bist_hv_ot             = bist_dgt_ang[1];
