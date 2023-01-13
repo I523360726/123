@@ -171,7 +171,7 @@ assign o_owt_bist_rutl = ~owt_bist_fail;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        o_hv_intb_bist_rult <= 1'b1;
+        o_hv_intb_bist_rult <= 1'b0;
     end
     else if(i_bist_en & (bist_tmo_cnt<BIST_TMO_TH)) begin
         if(i_hv_intb0_pulse | i_hv_intb1_pulse) begin
