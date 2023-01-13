@@ -95,7 +95,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-assign o_scan_reg_bist_rult = ~scan_reg_bist_err;
+assign o_scan_reg_bist_rult = scan_reg_bist_err;
 
 //owt tx
 always_ff@(posedge i_clk or negedge i_rst_n) begin
