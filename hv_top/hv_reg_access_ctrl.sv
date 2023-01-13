@@ -65,8 +65,8 @@ parameter LANCH_LST_TX_CNT_W = $clog2(MAX_OWT_TX_CYC_NUM) ;
 //==================================
 //var delcaration
 //==================================
-logic                                       owt_rx_reg_wen              ;
-logic                                       owt_rx_reg_ren              ;
+logic                                       owt_rx_reg_wr_req           ;
+logic                                       owt_rx_reg_rd_req           ;
 logic [REG_AW-1:                0]          owt_rx_reg_addr             ;
 logic [REG_DW-1:                0]          owt_rx_reg_wdata            ;
 logic [REG_CRC_W-1:             0]          owt_rx_reg_wcrc             ; 
@@ -75,13 +75,9 @@ logic                                       spi_reg_wen                 ;
 logic                                       spi_reg_ren                 ;
 
 logic                                       owt_grant                   ;
-logic [2:                       0]          owt_grant_ff                ;
 logic                                       wdg_scan_grant              ;
-logic [2:                       0]          wdg_scan_grant_ff           ;
 logic                                       wdg_scan_grant_mask         ;
 logic                                       spi_grant                   ;
-logic [2:                       0]          spi_grant_ff                ;
-logic                                       spi_grant_mask              ;
 
 logic                                       owt_wr_ack                  ;
 logic                                       owt_rd_ack                  ;
@@ -93,41 +89,94 @@ logic                                       lanch_last_owt_tx           ;
 logic                                       tx_cmd_lock                 ;
 logic [LANCH_LST_TX_CNT_W-1:    0]          lanch_lst_tx_cnt            ;
 logic                                       lanch_lst_tx_flag           ;
+
+logic                                       cur_is_owt_acc              ;
+logic                                       cur_is_spi_acc              ;
+logic                                       cur_is_wdg_acc              ;
 //==================================
 //main code
 //==================================
-assign owt_rx_reg_wen   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status &  i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
-assign owt_rx_reg_ren   = i_owt_rx_rac_vld & ~i_owt_rx_rac_status & ~i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1] ;
-assign owt_rx_reg_addr  = i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-2: 0]                                         ;
-assign owt_rx_reg_wdata = i_owt_rx_rac_data                                                              ;
-assign owt_rx_reg_wcrc  = i_owt_rx_rac_crc                                                               ;
-
-assign owt_grant        = owt_rx_reg_ren | owt_rx_reg_wen ;
-assign owt_grant_ff[0]  = owt_grant                       ;
-
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        owt_grant_ff[2: 1] <= 2'b0;
+        owt_rx_reg_wr_req <= 1'b0;
     end
-    else begin
-        owt_grant_ff[2: 1] <= owt_grant_ff[1: 0];
+    else if(cur_is_owt_acc & i_reg_rac_wack) begin
+        owt_rx_reg_wr_req <= 1'b0;    
     end
+    else if(i_owt_rx_rac_vld & ~i_owt_rx_rac_status & i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1]) begin
+        owt_rx_reg_wr_req <= 1'b1;
+    end
+    else;
 end
 
-assign spi_grant_mask   = ~(|spi_grant_ff[2: 1])                                                                       ;
-assign spi_grant        = (i_spi_rac_wr_req | i_spi_rac_rd_req) & ~(owt_rx_reg_wen | owt_rx_reg_ren) & spi_grant_mask  ;
-assign spi_reg_wen      = i_spi_rac_wr_req & spi_grant;
-assign spi_reg_ren      = i_spi_rac_rd_req & spi_grant;
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        owt_rx_reg_rd_req <= 1'b0;
+    end
+    else if(cur_is_owt_acc & i_reg_rac_rack) begin
+        owt_rx_reg_rd_req <= 1'b0;    
+    end
+    else if(i_owt_rx_rac_vld & ~i_owt_rx_rac_status & ~i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1]) begin
+        owt_rx_reg_rd_req <= 1'b1;
+    end
+    else;
+end
 
-assign spi_grant_ff[0] = spi_grant;
+always_ff@(posedge i_clk) begin
+    if(i_owt_rx_rac_vld & ~i_owt_rx_rac_status) begin
+        owt_rx_reg_addr <= i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-2: 0];
+    end
+    else;
+end
+
+always_ff@(posedge i_clk) begin
+    if(i_owt_rx_rac_vld & ~i_owt_rx_rac_status & i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1]) begin
+        owt_rx_reg_wdata <= i_owt_rx_rac_data;
+    end
+    else;
+end
+
+always_ff@(posedge i_clk) begin
+    if(i_owt_rx_rac_vld & ~i_owt_rx_rac_status & i_owt_rx_rac_cmd[OWT_CMD_BIT_NUM-1]) begin
+        owt_rx_reg_wcrc <= i_owt_rx_rac_crc;
+    end
+    else;
+end
+
+assign owt_grant = (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) & 
+                   (owt_rx_reg_rd_req | owt_rx_reg_wr_req | (i_owt_rx_rac_vld & ~i_owt_rx_rac_status));
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        spi_grant_ff[2: 1] <= 2'b0;
+        cur_is_owt_acc <= 1'b0;
     end
-    else begin
-        spi_grant_ff[2: 1] <= spi_grant_ff[1: 0];
+    else if(cur_is_owt_acc & (i_reg_rac_rack | i_reg_rac_wack)) begin
+        cur_is_owt_acc <= 1'b0;    
     end
+    else if(owt_grant) begin
+        cur_is_owt_acc <= 1'b1;
+    end
+    else;
+end
+
+assign spi_grant = (i_spi_rac_wr_req | i_spi_rac_rd_req) & 
+                  ~(owt_rx_reg_rd_req | owt_rx_reg_wr_req | (i_owt_rx_rac_vld & ~i_owt_rx_rac_status)) & 
+                   (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) ;
+
+assign spi_reg_wen = i_spi_rac_wr_req & spi_grant;
+assign spi_reg_ren = i_spi_rac_rd_req & spi_grant;
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        cur_is_owt_acc <= 1'b0;
+    end
+    else if(cur_is_owt_acc & (i_reg_rac_rack | i_reg_rac_wack)) begin
+        cur_is_owt_acc <= 1'b0;    
+    end
+    else if(owt_grant) begin
+        cur_is_owt_acc <= 1'b1;
+    end
+    else;
 end
 
 assign wdg_scan_grant_mask  = ~(|wdg_scan_grant_ff[2: 1])                                                                                            ;
@@ -318,6 +367,17 @@ end
 //    
 // synopsys translate_on    
 endmodule
+
+
+
+
+
+
+
+
+
+
+
 
 
 
