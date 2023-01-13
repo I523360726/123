@@ -60,8 +60,7 @@ module hv_reg_access_ctrl #(
 //==================================
 //local param delcaration
 //==================================
-parameter MAX_OWT_TX_CYC_NUM = 512                        ;
-parameter LANCH_LST_TX_CNT_W = $clog2(MAX_OWT_TX_CYC_NUM) ;
+
 //==================================
 //var delcaration
 //==================================
@@ -69,21 +68,22 @@ logic                                       owt_rx_reg_wr_req           ;
 logic                                       owt_rx_reg_rd_req           ;
 logic [REG_AW-1:                0]          owt_rx_reg_addr             ;
 logic [REG_DW-1:                0]          owt_rx_reg_wdata            ;
-logic [REG_CRC_W-1:             0]          owt_rx_reg_wcrc             ; 
+logic [REG_CRC_W-1:             0]          owt_rx_reg_wcrc             ;
+
+logic                                       owt_rx_reg_ren              ;
+logic                                       owt_rx_reg_wen              ;
 
 logic                                       spi_reg_wen                 ;
 logic                                       spi_reg_ren                 ;
 
 logic                                       owt_grant                   ;
 logic                                       wdg_scan_grant              ;
-logic                                       wdg_scan_grant_mask         ;
 logic                                       spi_grant                   ;
 
 logic                                       owt_wr_ack                  ;
 logic                                       owt_rd_ack                  ;
 logic [REG_DW-1:                0]          rac_spi_data                ;
-logic [REG_AW-1:                0]          rac_spi_addr                ;
-logic [REG_AW-1:                0]          rac_reg_addr_ff             ;  
+logic [REG_AW-1:                0]          rac_spi_addr                ;  
 logic                                       lanch_last_owt_tx           ;  
 
 logic                                       tx_cmd_lock                 ;
@@ -144,7 +144,10 @@ always_ff@(posedge i_clk) begin
 end
 
 assign owt_grant = (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) & 
-                   (owt_rx_reg_rd_req | owt_rx_reg_wr_req | (i_owt_rx_rac_vld & ~i_owt_rx_rac_status));
+                   (owt_rx_reg_rd_req | owt_rx_reg_wr_req);
+
+assign owt_rx_reg_ren = owt_grant & owt_rx_reg_rd_req ;
+assign owt_rx_reg_wen = owt_grant & owt_rx_reg_wr_req ;              
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -160,7 +163,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
 end
 
 assign spi_grant = (i_spi_rac_wr_req | i_spi_rac_rd_req) & 
-                  ~(owt_rx_reg_rd_req | owt_rx_reg_wr_req | (i_owt_rx_rac_vld & ~i_owt_rx_rac_status)) & 
+                  ~(owt_rx_reg_rd_req | owt_rx_reg_wr_req) & 
                    (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) ;
 
 assign spi_reg_wen = i_spi_rac_wr_req & spi_grant;
@@ -168,34 +171,38 @@ assign spi_reg_ren = i_spi_rac_rd_req & spi_grant;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        cur_is_owt_acc <= 1'b0;
+        cur_is_spi_acc <= 1'b0;
     end
-    else if(cur_is_owt_acc & (i_reg_rac_rack | i_reg_rac_wack)) begin
-        cur_is_owt_acc <= 1'b0;    
+    else if(cur_is_spi_acc & (i_reg_rac_rack | i_reg_rac_wack)) begin
+        cur_is_spi_acc <= 1'b0;    
     end
-    else if(owt_grant) begin
-        cur_is_owt_acc <= 1'b1;
+    else if(spi_grant) begin
+        cur_is_spi_acc <= 1'b1;
     end
     else;
 end
 
-assign wdg_scan_grant_mask  = ~(|wdg_scan_grant_ff[2: 1])                                                                                            ;
-assign wdg_scan_grant       = i_wdg_scan_rac_rd_req & ~(owt_rx_reg_wen | owt_rx_reg_ren | i_spi_rac_wr_req | i_spi_rac_rd_req) & wdg_scan_grant_mask ;
-
-assign wdg_scan_grant_ff[0] = wdg_scan_grant;
+assign wdg_scan_grant = (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) &
+                         ~(owt_rx_reg_rd_req | owt_rx_reg_wr_req) &
+                         ~(i_spi_rac_wr_req | i_spi_rac_rd_req) &
+                        i_wdg_scan_rac_rd_req;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        wdg_scan_grant_ff[2: 1] <= 2'b0;
+        cur_is_wdg_acc <= 1'b0;
     end
-    else begin
-        wdg_scan_grant_ff[2: 1] <= wdg_scan_grant_ff[1: 0];
+    else if(cur_is_wdg_acc & (i_reg_rac_rack | i_reg_rac_wack)) begin
+        cur_is_wdg_acc <= 1'b0;    
     end
+    else if(wdg_scan_grant) begin
+        cur_is_wdg_acc <= 1'b1;
+    end
+    else;
 end
 
-assign o_rac_wdg_scan_ack  = i_reg_rac_rack & wdg_scan_grant_ff[2]  ;
-assign o_rac_wdg_scan_data = i_reg_rac_rdata                        ;
-assign o_rac_wdg_scan_crc  = i_reg_rac_rcrc                         ;
+assign o_rac_wdg_scan_ack  = i_reg_rac_rack & cur_is_wdg_acc  ;
+assign o_rac_wdg_scan_data = i_reg_rac_rdata                  ;
+assign o_rac_wdg_scan_crc  = i_reg_rac_rcrc                   ;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -233,15 +240,6 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        rac_reg_addr_ff <= REG_AW'(0);
-    end
-    else begin
-        rac_reg_addr_ff <= o_rac_reg_addr;
-    end
-end
-
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
         o_rac_reg_wdata <= REG_DW'(0);
     end
     else if(owt_rx_reg_wen) begin
@@ -267,12 +265,12 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
 end
                        
 assign rac_spi_data   = i_reg_rac_wack ? o_rac_reg_wdata : i_reg_rac_rdata;
-assign rac_spi_addr   = i_reg_rac_wack ? o_rac_reg_addr  : rac_reg_addr_ff;
+assign rac_spi_addr   = o_rac_reg_addr;
 
-assign o_rac_spi_wack = i_reg_rac_wack & spi_grant_ff[1] ; 
-assign o_rac_spi_rack = i_reg_rac_rack & spi_grant_ff[2] ;
-assign o_rac_spi_data = rac_spi_data                     ;
-assign o_rac_spi_addr = rac_spi_addr                     ;
+assign o_rac_spi_wack = i_reg_rac_wack & cur_is_spi_acc ; 
+assign o_rac_spi_rack = i_reg_rac_rack & cur_is_spi_acc ;
+assign o_rac_spi_data = rac_spi_data                    ;
+assign o_rac_spi_addr = rac_spi_addr                    ;
 
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
@@ -281,8 +279,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_rac_owt_tx_rd_cmd_vld <= 1'b0;        
     end
     else begin
-        o_rac_owt_tx_wr_cmd_vld <= (i_reg_rac_wack & owt_grant_ff[1]) | (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
-        o_rac_owt_tx_rd_cmd_vld <= (i_reg_rac_rack & owt_grant_ff[2]) | (lanch_last_owt_tx & (tx_cmd_lock==RD_OP));           
+        o_rac_owt_tx_wr_cmd_vld <= (i_reg_rac_wack & cur_is_owt_acc) | (lanch_last_owt_tx & (tx_cmd_lock==WR_OP)); 
+        o_rac_owt_tx_rd_cmd_vld <= (i_reg_rac_rack & cur_is_owt_acc) | (lanch_last_owt_tx & (tx_cmd_lock==RD_OP));           
     end
 end
 
@@ -290,10 +288,10 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         tx_cmd_lock <= WR_OP;
     end
-    else if(i_reg_rac_wack & owt_grant_ff[1]) begin
+    else if(i_reg_rac_wack & cur_is_owt_acc) begin
         tx_cmd_lock <= WR_OP;    
     end
-    else if(i_reg_rac_rack & owt_grant_ff[2]) begin
+    else if(i_reg_rac_rack & cur_is_owt_acc) begin
         tx_cmd_lock <= RD_OP;    
     end
     else;
@@ -304,11 +302,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_rac_owt_tx_addr <= REG_AW'(0);
     end
-    else if(i_reg_rac_wack & owt_grant_ff[1]) begin
+    else if((i_reg_rac_wack | i_reg_rac_rack) & cur_is_owt_acc) begin
         o_rac_owt_tx_addr <= o_rac_reg_addr;    
-    end
-    else if(i_reg_rac_rack & owt_grant_ff[2]) begin
-        o_rac_owt_tx_addr <= rac_reg_addr_ff;    
     end
     else;
 end
@@ -317,11 +312,11 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_rac_owt_tx_data <= REG_DW'(0);
     end
-    else if(i_reg_rac_wack & owt_grant_ff[1]) begin
+    else if(i_reg_rac_wack & cur_is_owt_acc) begin
         o_rac_owt_tx_data <= {{(OWT_ADCD_BIT_NUM-REG_DW){1'b0}}, o_rac_reg_wdata};    
     end
-    else if(i_reg_rac_rack & owt_grant_ff[2]) begin
-        o_rac_owt_tx_data <= (rac_reg_addr_ff==REQ_ADC_ADDR) ? {i_adc2_data, i_adc1_data} : {{(OWT_ADCD_BIT_NUM-REG_DW){1'b0}}, i_reg_rac_rdata};    
+    else if(i_reg_rac_rack & cur_is_owt_acc) begin
+        o_rac_owt_tx_data <= (o_rac_reg_addr==REQ_ADC_ADDR) ? {i_adc2_data, i_adc1_data} : {{(OWT_ADCD_BIT_NUM-REG_DW){1'b0}}, i_reg_rac_rdata};    
     end
     else;
 end
