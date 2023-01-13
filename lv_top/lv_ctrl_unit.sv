@@ -184,7 +184,7 @@ always_comb begin
             if(~i_pwr_on) begin
                 lv_ctrl_nxt_st = PWR_DWN_ST;
             end
-            else if(i_reg_efuse_done & i_reg_efuse_vld) begin
+            else if(~i_io_test_mode & i_reg_efuse_done & i_reg_efuse_vld) begin
                 lv_ctrl_nxt_st = WAIT_ST;
             end
             else;        
