@@ -12,11 +12,11 @@ module hv_adc_sample #(
     `include "hv_param.svh"
     parameter END_OF_LIST = 1
 )( 
-    input  logic 		       i_ang_dgt_adc1_rdy   , //analog to digtial
+    input  logic               i_ang_dgt_adc1_rdy   , //analog to digtial
     input  logic [ADC_DW-1: 0] i_ang_dgt_adc1_data  ,
     output logic [ADC_DW-1: 0] o_adc1_equ_data      ,
 
-    input  logic 		       i_ang_dgt_adc2_rdy   , 
+    input  logic               i_ang_dgt_adc2_rdy   , 
     input  logic [ADC_DW-1: 0] i_ang_dgt_adc2_data  ,
     output logic [ADC_DW-1: 0] o_adc2_equ_data      ,
 
@@ -38,8 +38,8 @@ logic                             sync_adc1_rdy        ;
 logic                             sync_adc2_rdy        ;
 logic                             sync_adc1_rdy_ff     ;
 logic                             sync_adc2_rdy_ff     ;
-logic [CACHE_NUM: 0]              adc1_data_vld_ff     ;
-logic [CACHE_NUM: 0]              adc2_data_vld_ff     ;
+logic                             adc1_data_vld        ;
+logic                             adc2_data_vld        ;
 logic                             adc1_equ_data_vld    ;
 logic                             adc2_equ_data_vld    ;
 logic [TMP_DW-1:  0]              adc1_equ_data        ;
@@ -76,8 +76,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign adc1_data_vld_ff[0] = sync_adc1_rdy & ~sync_adc1_rdy_ff;
-assign adc2_data_vld_ff[0] = sync_adc2_rdy & ~sync_adc2_rdy_ff;
+assign adc1_data_vld = sync_adc1_rdy & ~sync_adc1_rdy_ff;
+assign adc2_data_vld = sync_adc2_rdy & ~sync_adc2_rdy_ff;
 
 assign adc1_data_ff[0] = i_ang_dgt_adc1_data;
 assign adc2_data_ff[0] = i_ang_dgt_adc2_data;
@@ -86,23 +86,12 @@ generate;
 for(genvar i=0; i<CACHE_NUM; i=i+1) begin: STORE_SAMPLE_DATA_BLK
     always_ff@(posedge i_clk or negedge i_rst_n) begin
         if(~i_rst_n) begin
-            adc1_data_vld_ff[i+1] <= 1'b0;
-            adc2_data_vld_ff[i+1] <= 1'b0;
-        end
-        else begin
-            adc1_data_vld_ff[i+1] <= adc1_data_vld_ff[i];
-            adc2_data_vld_ff[i+1] <= adc2_data_vld_ff[i];
-        end
-    end
-
-    always_ff@(posedge i_clk or negedge i_rst_n) begin
-        if(~i_rst_n) begin
             adc1_data_ff[i+1] <= ADC_DW'(0);
             adc2_data_ff[i+1] <= ADC_DW'(0);
         end
         else begin
-            adc1_data_ff[i+1] <= adc1_data_vld_ff[i] ? adc1_data_ff[i] : adc1_data_ff[i+1];
-            adc2_data_ff[i+1] <= adc2_data_vld_ff[i] ? adc2_data_ff[i] : adc2_data_ff[i+1];
+            adc1_data_ff[i+1] <= adc1_data_vld ? adc1_data_ff[i] : adc1_data_ff[i+1];
+            adc2_data_ff[i+1] <= adc2_data_vld ? adc2_data_ff[i] : adc2_data_ff[i+1];
         end
     end
 end 
