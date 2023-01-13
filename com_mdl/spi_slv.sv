@@ -162,7 +162,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if(rac_spi_ack_ff[2]) begin //use rac_spi_ack_ff[2] for make sure spi_sclk steadily sample slv_rsp_bit.
         spi_access_flag <= 1'b0;
     end
-    else if(lanch_spi_access) begin
+    else if(spi_rac_wen | spi_rac_ren) begin
         spi_access_flag <= 1'b1;
     end
     else;
