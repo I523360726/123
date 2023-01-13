@@ -167,7 +167,7 @@ always_comb begin
             else if(fsifo_en) begin
                 hv_ctrl_nxt_st = FSISO_ST;
             end            
-            else if(~i_io_test_mode & i_reg_efuse_done & i_reg_efuse_vld) begin
+            else if(~i_io_test_mode || (i_reg_efuse_done & i_reg_efuse_vld)) begin
                 hv_ctrl_nxt_st = WAIT_ST;
             end
             else;        
