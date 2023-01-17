@@ -48,7 +48,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        lv_abist_fail <= 1'b1;
+        lv_abist_fail <= 1'b0;
     end
     else if(i_bist_en) begin
         if(i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM)) begin
@@ -57,11 +57,14 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         else if(~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM)) begin
             lv_abist_fail <= 1'b1;		
         end
+        else;
     end
-    else;
+    else begin
+        lv_abist_fail <= 1'b0;        
+    end
 end
 
-assign o_lv_abist_rult = ~lv_abist_fail;
+assign o_lv_abist_rult = lv_abist_fail;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin

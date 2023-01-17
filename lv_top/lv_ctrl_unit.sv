@@ -184,7 +184,7 @@ always_comb begin
             if(~i_pwr_on) begin
                 lv_ctrl_nxt_st = PWR_DWN_ST;
             end
-            else if(~i_io_test_mode || (i_reg_efuse_done & i_reg_efuse_vld)) begin
+            else if(~i_io_test_mode && (i_reg_efuse_done & i_reg_efuse_vld)) begin
                 lv_ctrl_nxt_st = WAIT_ST;
             end
             else;        
@@ -238,10 +238,10 @@ always_comb begin
             else if(i_reg_rst_en) begin
                 lv_ctrl_nxt_st = RST_ST;            
             end
-            else if(lvhv_err2 & ~effect_pwm_err & ~i_reg_cfg_en) begin
+            else if((lvhv_err2 | i_reg_spi_err | i_reg_scan_crc_err) & ~effect_pwm_err & ~i_reg_cfg_en) begin
                 lv_ctrl_nxt_st = FAULT_ST;            
             end
-            else if(~effect_pwm_err & i_reg_cfg_en & i_io_fsenb_n & i_reg_bist_en) begin
+            else if(~lvhv_err0 & ~i_reg_owt_com_err & ~i_reg_wdg_tmo_err & i_reg_cfg_en & i_io_fsenb_n & i_reg_bist_en) begin
                 lv_ctrl_nxt_st = BIST_ST;            
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err | i_reg_spi_err | i_reg_scan_crc_err | lvhv_err0) 
@@ -336,9 +336,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_owt_com_en <= 1'b0;
     end
-    else if((lv_ctrl_nxt_st==TEST_ST) || (lv_ctrl_nxt_st==NML_ST) ||
-            (lv_ctrl_nxt_st==FAILSAFE_ST) || (lv_ctrl_nxt_st==FAULT_ST) || (lv_ctrl_nxt_st==CFG_ST) ||
-            (lv_ctrl_nxt_st==RST_ST) || (lv_ctrl_nxt_st==BIST_ST)) begin
+    else if((lv_ctrl_nxt_st==NML_ST) ||
+            (lv_ctrl_nxt_st==FAILSAFE_ST) || (lv_ctrl_nxt_st==FAULT_ST)) begin
         o_owt_com_en <= 1'b1;
     end
     else begin

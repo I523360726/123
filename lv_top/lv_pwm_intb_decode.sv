@@ -28,7 +28,7 @@ module lv_pwm_intb_decode #(
 //==================================
 localparam PWM_DETECT_CNT_W         = $clog2(PWM_INTB_EXT_CYC_NUM+1);
 localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(4)          ;
-localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(8)          ;
+localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(12)         ;
 
 localparam PWM_INTB_FSM_ST_NUM      = 5                             ;
 localparam PWM_INTB_FSM_ST_W        = $clog2(PWM_INTB_FSM_ST_NUM)   ;
@@ -154,10 +154,10 @@ gnrl_sync #(
 );
 
 signal_detect #(
-    .CNT_W (4       ) ,
-    .DN_TH (4'(4)   ) ,
-    .UP_TH (4'(12)  ) ,
-    .MODE  (0       ) 
+    .CNT_W (PWM_DETECT_CNT_W    ) ,
+    .DN_TH (CNT_DN_TH           ) ,
+    .UP_TH (CNT_UP_TH           ) ,
+    .MODE  (0                   ) 
 ) U_BIT_DETECT ( 
     .i_vld        (1'b1                 ),
     .i_vld_data   (hv_pwm_intb_n        ),

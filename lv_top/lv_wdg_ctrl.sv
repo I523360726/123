@@ -240,7 +240,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         if(i_owt_rx_wdg_rsp) begin
             wdg_timeout_cnt <= WDG_CNT_W'(0);        
         end
-        else if(wdg_timeout_cnt==(WDG_TIMEOUT_TH[i_wdgtmo_config]-1)) begin
+        else if(wdg_timeout_cnt==(LV_WDG_TIMEOUT_TH[i_wdgtmo_config]-1)) begin
             wdg_timeout_cnt <= WDG_CNT_W'(0);
         end
         else begin
@@ -252,7 +252,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
 end
 
-assign wdg_timeout_err = (wdg_timeout_cnt==(WDG_TIMEOUT_TH[i_wdgtmo_config]-1));
+assign wdg_timeout_err = (wdg_timeout_cnt==(LV_WDG_TIMEOUT_TH[i_wdgtmo_config]-1));
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin

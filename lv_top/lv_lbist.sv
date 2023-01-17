@@ -154,7 +154,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        owt_bist_fail <= 1'b1;
+        owt_bist_fail <= 1'b0;
     end
     else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
         if(owt_rx_ok_cnt<BIST_OWT_TX_OK_NUM) begin
@@ -167,7 +167,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-assign o_owt_bist_rutl = ~owt_bist_fail;
+assign o_owt_bist_rutl = owt_bist_fail;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
