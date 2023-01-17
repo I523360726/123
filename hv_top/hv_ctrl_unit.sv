@@ -119,7 +119,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else if(i_efuse_load_done) begin
         o_efuse_load_req <= 1'b0;
     end
-    else if(~i_io_test_mode & ~i_reg_efuse_vld & (hv_ctrl_cur_st==WAIT_ST)) begin
+    else if(~i_io_test_mode & ~i_reg_efuse_vld & (hv_ctrl_nxt_st==WAIT_ST)) begin
         o_efuse_load_req <= 1'b1;
     end
     else;
@@ -167,7 +167,7 @@ always_comb begin
             else if(fsifo_en) begin
                 hv_ctrl_nxt_st = FSISO_ST;
             end            
-            else if(~i_io_test_mode || (i_reg_efuse_done & i_reg_efuse_vld)) begin
+            else if(~i_io_test_mode && (i_reg_efuse_done & i_reg_efuse_vld)) begin
                 hv_ctrl_nxt_st = WAIT_ST;
             end
             else;        
@@ -221,10 +221,10 @@ always_comb begin
             else if(i_reg_rst_en) begin
                 hv_ctrl_nxt_st = RST_ST;            
             end
-            else if(~effect_pwm_err & ~i_reg_cfg_en) begin
+            else if(~effect_pwm_err & (hv_err2 | i_reg_spi_err | i_reg_scan_crc_err) & ~i_reg_cfg_en) begin
                 hv_ctrl_nxt_st = FAULT_ST;            
             end
-            else if(~effect_pwm_err & i_reg_cfg_en & i_reg_bist_en) begin
+            else if(~hv_err0 & ~i_reg_owt_com_err & ~i_reg_wdg_tmo_err & i_reg_bist_en) begin
                 hv_ctrl_nxt_st = BIST_ST;            
             end
             else if(~(i_reg_owt_com_err | i_reg_wdg_tmo_err | i_reg_spi_err | i_reg_scan_crc_err | hv_err0) 
@@ -307,9 +307,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_owt_com_en <= 1'b0;
     end
-    else if((hv_ctrl_nxt_st==TEST_ST) || (hv_ctrl_nxt_st==NML_ST) ||
-            (hv_ctrl_nxt_st==FSISO_ST) || (hv_ctrl_nxt_st==FAULT_ST) || (hv_ctrl_nxt_st==CFG_ST) ||
-            (hv_ctrl_nxt_st==RST_ST) || (hv_ctrl_nxt_st==BIST_ST)) begin
+    else if((hv_ctrl_nxt_st==NML_ST) || (hv_ctrl_nxt_st==FAULT_ST)) begin
         o_owt_com_en <= 1'b1;
     end
     else begin

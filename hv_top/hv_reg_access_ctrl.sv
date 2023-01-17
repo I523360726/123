@@ -146,8 +146,8 @@ end
 assign owt_grant = (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) & 
                    (owt_rx_reg_rd_req | owt_rx_reg_wr_req);
 
-assign owt_rx_reg_ren = owt_grant & owt_rx_reg_rd_req ;
-assign owt_rx_reg_wen = owt_grant & owt_rx_reg_wr_req ;              
+assign owt_rx_reg_ren = cur_is_owt_acc & owt_rx_reg_rd_req ;
+assign owt_rx_reg_wen = cur_is_owt_acc & owt_rx_reg_wr_req ;              
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -166,8 +166,8 @@ assign spi_grant = (i_spi_rac_wr_req | i_spi_rac_rd_req) &
                   ~(owt_rx_reg_rd_req | owt_rx_reg_wr_req) & 
                    (~cur_is_owt_acc & ~cur_is_spi_acc & ~cur_is_wdg_acc) ;
 
-assign spi_reg_wen = i_spi_rac_wr_req & spi_grant;
-assign spi_reg_ren = i_spi_rac_rd_req & spi_grant;
+assign spi_reg_wen = i_spi_rac_wr_req & cur_is_spi_acc;
+assign spi_reg_ren = i_spi_rac_rd_req & cur_is_spi_acc;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -209,7 +209,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_rac_reg_ren <= 1'b0;
     end
     else begin
-        o_rac_reg_ren <= owt_rx_reg_ren | spi_reg_ren | wdg_scan_grant;
+        o_rac_reg_ren <= owt_rx_reg_ren | spi_reg_ren | cur_is_wdg_acc;
     end
 end
 

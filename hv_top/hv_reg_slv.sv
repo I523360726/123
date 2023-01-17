@@ -1275,7 +1275,7 @@ rw_reg #(
     .AW                     (REG_AW     ),
     .CRC_W                  (REG_CRC_W  ),
     .DEFAULT_VAL            (8'hD8      ),
-    .CRC_DEF_VAL            (8'h4C      ),     
+    .CRC_DEF_VAL            (8'hCE      ),     
     .REG_ADDR               (7'h55      ),
     .SUPPORT_TEST_MODE_WR   (1'b1       ),
     .SUPPORT_TEST_MODE_RD   (1'b1       ),
