@@ -81,6 +81,8 @@ logic                       d21_gate_back       ;
 
 logic                       test_mode           ;
 logic [31:  0]              spi_cnt             ;
+logic                       bistlv_ov           ;
+logic [99:  0]              vsup_ov_ff          ;
 //==================================        
 //main code
 //==================================
@@ -152,9 +154,9 @@ assign spi_data  = (spi_cnt<32'd36000) ? 8'b1111_1111 :
                    (spi_cnt<32'd37000) ? 8'b1000_0000 : 
                    (spi_cnt<32'd38000) ? 8'b0000_0010 :
                    (spi_cnt<32'd39000) ? 8'b0000_0100 : 
-                   (spi_cnt<32'd40000) ? 8'b0000_0001 : 
-                   (spi_cnt<32'd60000) ? 8'b0000_0000 : 
-                   (spi_cnt<32'd61000) ? 8'b0000_0010 : 8'b0000_1000;
+                   (spi_cnt<32'd40000) ? 8'b0000_1100 : 
+                   (spi_cnt<32'd60000) ? 8'b0000_1100 : 
+                   (spi_cnt<32'd61000) ? 8'b0000_1100 : 8'b0000_1100;
 
 gen_spi_sig #(
     .MODE(0)
@@ -170,6 +172,15 @@ gen_spi_sig #(
     .o_mosi      (mosi      ),
     .i_miso      (miso      )
 );
+
+always_ff@(posedge lv_clk or negedge lv_rst_n) begin
+    if(~lv_rst_n) begin
+        vsup_ov_ff[99: 0] <= 100'b0;    
+    end
+    else begin
+        vsup_ov_ff[99: 0] <= {vsup_ov_ff[98: 0], bistlv_ov};
+    end    
+end
 
 dig_lv_top_for_test U_DIG_LV_TOP( 
    .sclk                             (sclk                      ),
@@ -194,11 +205,11 @@ dig_lv_top_for_test U_DIG_LV_TOP(
 
    .uv_vsup                          (1'b1                      ), 
    .dt_flag                          (1'b0                      ), 
-   .vsup_ov                          (1'b0                      ), 
+   .vsup_ov                          (vsup_ov_ff[99]            ), 
    .gate_vs_pwm                      (1'b0                      ), 
    .rtmon                            (                          ),
 
-   .bistlv_ov                        (                          ),
+   .bistlv_ov                        (bistlv_ov                 ),
 
    .adc1_o                           (                          ),
    .adc2_o                           (                          ),
