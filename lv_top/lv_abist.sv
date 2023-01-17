@@ -31,15 +31,52 @@ parameter BIST_CNT_W           = $clog2(BIST_70US_CYC_NUM+1)  ;
 //==================================
 logic [BIST_CNT_W-1: 0]  bist_cnt           ;
 logic                    lv_abist_fail      ;
+logic                    dgt_ang_start      ;
+logic                    dgt_ang_end        ;
+logic                    abist_end          ;
+logic                    bist_cnt_start     ;
+logic                    bist_cnt_stop      ;
+logic                    bist_en_ff         ;
+logic                    lv_vsup_ov_ff      ;
+logic                    bist_sel           ;
 //==================================
 //main code
 //==================================
+assign bist_cnt_start = dgt_ang_start;
+assign bist_cnt_stop  = dgt_ang_end  ;
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        bist_en_ff <= 1'b0;
+    end
+    else begin
+        bist_en_ff <= i_bist_en;    
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        lv_vsup_ov_ff <= 1'b0;
+    end
+    else begin
+        lv_vsup_ov_ff <= i_lv_vsup_ov;    
+    end
+end
+
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         bist_cnt <= BIST_CNT_W'(0);
     end
     else if(i_bist_en) begin
-        bist_cnt <= (bist_cnt==BIST_70US_CYC_NUM) ? bist_cnt : (bist_cnt+1'b1);
+        if(bist_cnt_start) begin
+            bist_cnt <= BIST_CNT_W'(0);
+        end
+        else if(bist_cnt_stop) begin
+            bist_cnt <= bist_cnt;
+        end
+        else begin
+            bist_cnt <= (bist_cnt+1'b1);
+        end
     end
     else begin
         bist_cnt <= BIST_CNT_W'(0);    
@@ -48,13 +85,34 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        bist_sel <= 1'b0;
+    end
+    else if(i_bist_en) begin
+        if(abist_end) begin
+            bist_sel <= 1'b1; 
+        end 
+        else;
+    end
+    else begin
+        bist_sel <= 1'b0;    
+    end
+end
+
+assign dgt_ang_start = i_bist_en & ~bist_en_ff;
+assign dgt_ang_end   = (i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) || 
+                       (~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel);
+assign abist_end     = (~i_lv_vsup_ov & lv_vsup_ov_ff & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) || 
+                       (~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel);
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         lv_abist_fail <= 1'b0;
     end
     else if(i_bist_en) begin
-        if(i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM)) begin
+        if(i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) begin
             lv_abist_fail <= 1'b0;
         end
-        else if(~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM)) begin
+        else if(~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel) begin
             lv_abist_fail <= 1'b1;		
         end
         else;
@@ -71,7 +129,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_lbist_en <= 1'b0;
     end
     else if(i_bist_en) begin
-        if(bist_cnt>=BIST_70US_CYC_NUM) begin
+        if(abist_end) begin
             o_lbist_en <= 1'b1;
         end
         else;
@@ -86,7 +144,13 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         o_bistlv_ov <= 1'b0;
     end
     else if(i_bist_en) begin
-        o_bistlv_ov <= (bist_cnt<BIST_70US_CYC_NUM) ? 1'b1 : 1'b0;
+        if(dgt_ang_start) begin
+            o_bistlv_ov <= 1'b1;
+        end
+        else if(dgt_ang_end) begin
+            o_bistlv_ov <= 1'b0;
+        end
+        else;
     end
     else begin
         o_bistlv_ov <= 1'b0;  
