@@ -32,11 +32,6 @@ module hv_lbist #(
 //local param delcaration
 //==================================
 localparam SCAN_CNT_W           = $clog2(HV_SCAN_REG_NUM+1) ;
-localparam BIST_OWT_RX_NUM      = 4                         ;
-localparam BIST_OWT_RX_CNT_W    = $clog2(BIST_OWT_RX_NUM+1) ;
-localparam BIST_OWT_RX_OK_NUM   = 3                         ;
-localparam BIST_TMO_TH          = 25000*CLK_M               ;
-localparam BIST_TMO_CNT_W       = $clog2(BIST_TMO_TH)       ;
 //==================================
 //var delcaration
 //==================================
@@ -88,7 +83,9 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         end
         else;
     end
-    else;
+    else begin
+        scan_reg_bist_err <= 1'b0;    
+    end
 end
 
 assign o_hv_scan_bist_rult = scan_reg_bist_err;
@@ -99,7 +96,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         owt_rx_ok_cnt <= BIST_OWT_RX_CNT_W'(0);
     end
     else if(i_bist_en) begin
-        if(i_owt_rx_ack & ~i_owt_rx_status) begin
+        if(i_owt_rx_ack & ~i_owt_rx_status & (bist_tmo_cnt<(BIST_TMO_TH-1))) begin
             owt_rx_ok_cnt <= owt_rx_ok_cnt+1'b1;
         end
         else;
@@ -114,7 +111,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         bist_tmo_cnt <= BIST_TMO_CNT_W'(0);
     end
     else if(i_bist_en) begin
-        bist_tmo_cnt <= (bist_tmo_cnt==(BIST_TMO_TH-1)) ? bist_tmo_cnt : (bist_tmo_cnt+1'b1);
+        bist_tmo_cnt <= (bist_tmo_cnt>=(BIST_TMO_TH-1)) ? bist_tmo_cnt : (bist_tmo_cnt+1'b1);
     end
     else begin
         bist_tmo_cnt <= BIST_TMO_CNT_W'(0);    
@@ -125,22 +122,26 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_hv_owt_bist_rult <= 1'b0;
     end
-    else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
-        if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM)) begin
-            o_hv_owt_bist_rult <= 1'b0;
-        end
-        else begin
-            o_hv_owt_bist_rult <= 1'b1;            
+    else if(i_bist_en) begin
+        if(bist_tmo_cnt>=(BIST_TMO_TH-1)) begin
+            if((owt_rx_ok_cnt<BIST_OWT_RX_OK_NUM)) begin
+                o_hv_owt_bist_rult <= 1'b1;
+            end
+            else begin
+                o_hv_owt_bist_rult <= 1'b0;            
+            end
         end
     end
-    else;
+    else begin
+        o_hv_owt_bist_rult <= 1'b0;    
+    end
 end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_hv_bist_done <= 1'b0;
     end
-    else if(i_bist_en & (bist_tmo_cnt==(BIST_TMO_TH-1))) begin
+    else if(i_bist_en & (bist_tmo_cnt>=(BIST_TMO_TH-1))) begin
         o_hv_bist_done <= 1'b1;  
     end
     else begin
