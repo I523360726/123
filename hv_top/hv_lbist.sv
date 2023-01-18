@@ -97,7 +97,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     end
     else if(i_bist_en) begin
         if(i_owt_rx_ack & ~i_owt_rx_status & (bist_tmo_cnt<(BIST_TMO_TH-1))) begin
-            owt_rx_ok_cnt <= owt_rx_ok_cnt+1'b1;
+            owt_rx_ok_cnt <= (owt_rx_ok_cnt>=BIST_OWT_TX_NUM) ? owt_rx_ok_cnt : (owt_rx_ok_cnt+1'b1);
         end
         else;
     end
