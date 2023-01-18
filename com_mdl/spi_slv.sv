@@ -81,7 +81,7 @@ assign miso_cache = {slv_rsp_bit, spi_rx_bit};
 
 always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
     if(i_spi_csb) begin
-        miso_rptr <= (2*SPI_RX_BIT_NUM-2);
+        miso_rptr <= (2*SPI_RX_BIT_NUM-1);
     end
     else begin
         miso_rptr <= (miso_rptr==(SPI_RX_BIT_NUM-1)) ? (SPI_RX_BIT_NUM-1) : (miso_rptr-1'b1);
@@ -97,16 +97,20 @@ always_ff@(posedge i_spi_sclk or posedge i_spi_csb) begin
     end
 end
 
-always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
-    if(i_spi_csb) begin
-        spi_miso <= 1'b0;
-    end
-    else begin
-        spi_miso <= miso_cache[miso_rptr];
-    end
-end
+//always_ff@(negedge i_spi_sclk or posedge i_spi_csb) begin
+//    if(i_spi_csb) begin
+//        spi_miso <= 1'b0;
+//    end
+//    else begin
+//        spi_miso <= miso_cache[miso_rptr];
+//    end
+//end
 
-assign o_spi_miso = pre_load_miso ? slv_rsp_bit[SPI_RX_BIT_NUM-1] : spi_miso;
+assign spi_miso = miso_cache[miso_rptr];
+
+//assign o_spi_miso = pre_load_miso ? slv_rsp_bit[SPI_RX_BIT_NUM-1] : spi_miso;
+
+assign o_spi_miso = spi_miso;
 
 gnrl_sync #(
     .DW      (1),
