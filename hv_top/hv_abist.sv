@@ -30,7 +30,9 @@ module hv_abist #(
     input  logic                i_hv_scp_flt             ,
 
     output logic                o_bist_hv_adc            ,
+    input  logic                i_hv_adc_rdy1            ,
     input  logic [ADC_DW-1: 0]  i_hv_adc_data1           ,
+    input  logic                i_hv_adc_rdy2            ,
     input  logic [ADC_DW-1: 0]  i_hv_adc_data2           ,
 
     output logic                o_bist_hv_ov_status      ,
@@ -53,11 +55,12 @@ localparam ADC_DATA_UP_TH       = 10'h207                      ;
 localparam BIST_70US_CYC_NUM    = 70*CLK_M                     ;
 localparam BIST_1US_CYC_NUM     = 1*CLK_M                      ;
 localparam BIST_4US_CYC_NUM     = 4*CLK_M                      ;
+localparam BIST_90US_CYC_NUM    = 90*CLK_M                     ;
 localparam BIST_CNT_W           = $clog2(BIST_70US_CYC_NUM+1)  ;
 localparam BIST_ITEM_NUM        = 6                            ;
 localparam BIST_SEL_W           = $clog2(BIST_ITEM_NUM+1)      ;
 
-localparam integer unsigned BIST_CYC_NUM[BIST_ITEM_NUM-1: 0] = {BIST_4US_CYC_NUM, BIST_1US_CYC_NUM, BIST_1US_CYC_NUM, 
+localparam integer unsigned BIST_CYC_NUM[BIST_ITEM_NUM-1: 0] = {BIST_90US_CYC_NUM, BIST_1US_CYC_NUM, BIST_1US_CYC_NUM, 
                                                                 BIST_1US_CYC_NUM, BIST_1US_CYC_NUM, BIST_70US_CYC_NUM};
 //==================================
 //var delcaration
@@ -79,7 +82,8 @@ logic                        bist_cnt_stop          ;
 //==================================
 //main code
 //==================================
-assign hv_adc_data_vld  = (i_hv_adc_data1>=ADC_DATA_DN_TH) & (i_hv_adc_data1<=ADC_DATA_UP_TH) & (i_hv_adc_data2>=ADC_DATA_DN_TH) & (i_hv_adc_data2<=ADC_DATA_UP_TH);
+assign hv_adc_data_vld  = (i_hv_adc_data1>=ADC_DATA_DN_TH) & (i_hv_adc_data1<=ADC_DATA_UP_TH) & i_hv_adc_rdy1 &
+                          (i_hv_adc_data2>=ADC_DATA_DN_TH) & (i_hv_adc_data2<=ADC_DATA_UP_TH) & i_hv_adc_rdy2;
 assign bist_detect_sig  = {hv_adc_data_vld, i_hv_scp_flt, i_hv_oc, i_hv_desat_flt, i_hv_ot, i_hv_vcc_ov};
 
 assign dgt_ang_start[0] = i_bist_en & ~bist_en_ff;

@@ -808,8 +808,10 @@ hv_abist U_HV_ABIST(
     .i_hv_scp_flt               (hv_scp_err                         ),
 
     .o_bist_hv_adc              (o_bist_hv_adc                      ),
-    .i_hv_adc_data1             (adc_data1                          ),
-    .i_hv_adc_data2             (adc_data2                          ),
+    .i_hv_adc_rdy1              (i_adc_ready1                       ),
+    .i_hv_adc_data1             (i_adc_data1                        ),
+    .i_hv_adc_rdy2              (i_adc_ready2                       ),
+    .i_hv_adc_data2             (i_adc_data2                        ),
 
     .o_bist_hv_ov_status        (hv_bist1[1]                        ),
     .o_bist_hv_ot_status        (hv_bist1[2]                        ),
