@@ -6,7 +6,7 @@ parameter REG_CRC_W             = 8                                             
 parameter REQ_ADC_ADDR          = 7'h1f                                                     ,
 
 parameter OWT_FSM_ST_NUM        = 9                                                         ,
-parameter OWT_EXT_CYC_NUM       = 6                                                         ,
+parameter OWT_EXT_CYC_NUM       = 7                                                         ,
 parameter OWT_CRC_BIT_NUM       = 8                                                         ,
 parameter OWT_CMD_BIT_NUM       = 8                                                         ,
 parameter OWT_DATA_BIT_NUM      = 8                                                         ,
@@ -27,7 +27,7 @@ parameter OWT_CRC_ST            = OWT_FSM_ST_W'(6)                              
 parameter OWT_END_TAIL_ST       = OWT_FSM_ST_W'(7)                                          ,
 parameter OWT_ABORT_ST          = OWT_FSM_ST_W'(8)                                          ,
 
-parameter CLK_M                 =  48 ,
+parameter CLK_M                 =  53 ,
 parameter WDG_240US_CYC_NUM     =  240*CLK_M ,
 parameter WDG_250US_CYC_NUM     =  250*CLK_M ,
 parameter WDG_280US_CYC_NUM     =  280*CLK_M , //one core clk cycle is (1000/48)ns, 280us has (280x1000)ns/(1000/48)ns = 280x48 cycle.
@@ -107,6 +107,9 @@ parameter OWT_ADCD_CYC_NUM      = 2*OWT_ADCD_BIT_NUM *OWT_EXT_CYC_NUM ,
 parameter MAX_OWT_TX_CYC_NUM = OWT_HEAD_SYNC_CYC_NUM+2*OWT_TAIL_SYNC_CYC_NUM+OWT_CMD_CYC_NUM+OWT_DATA_CYC_NUM+OWT_CRC_CYC_NUM,
 parameter LANCH_LST_TX_CNT_W = $clog2(MAX_OWT_TX_CYC_NUM),
 
+parameter HV_MAX_OWT_RX_CYC_NUM = OWT_HEAD_SYNC_CYC_NUM+2*OWT_TAIL_SYNC_CYC_NUM+OWT_CMD_CYC_NUM+OWT_DATA_CYC_NUM+OWT_CRC_CYC_NUM,
+parameter HV_DLY_RX_ACK_CNT_W   = $clog2(HV_MAX_OWT_RX_CYC_NUM),
+
 parameter MAX_OWT_RX_CYC_NUM = OWT_HEAD_SYNC_CYC_NUM+2*OWT_TAIL_SYNC_CYC_NUM+OWT_CMD_CYC_NUM+OWT_ADCD_CYC_NUM+OWT_CRC_CYC_NUM,
 parameter DLY_RX_ACK_CNT_W   = $clog2(MAX_OWT_RX_CYC_NUM),
 
@@ -118,6 +121,9 @@ parameter BIST_OWT_TX_OK_NUM   = 3                                          ,
 parameter BIST_OWT_RX_OK_NUM   = BIST_OWT_TX_OK_NUM                         ,
 parameter BIST_TMO_TH          = (2*WDG_2030US_CYC_NUM>10*(MAX_OWT_TX_CYC_NUM+MAX_OWT_RX_CYC_NUM)) ? 2*WDG_2030US_CYC_NUM : 10*(MAX_OWT_TX_CYC_NUM+MAX_OWT_RX_CYC_NUM),
 parameter BIST_TMO_CNT_W       = $clog2(BIST_TMO_TH)                        ,
+
+parameter EFUSE_LOAD_DLY_NUM   = 20,
+parameter EFUSE_LOAD_DLY_CNT_W = $clog2(EFUSE_LOAD_DLY_NUM),
 
 
 
