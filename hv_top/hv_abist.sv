@@ -56,7 +56,7 @@ localparam BIST_70US_CYC_NUM    = 70*CLK_M                     ;
 localparam BIST_1US_CYC_NUM     = 1*CLK_M                      ;
 localparam BIST_4US_CYC_NUM     = 4*CLK_M                      ;
 localparam BIST_90US_CYC_NUM    = 90*CLK_M                     ;
-localparam BIST_CNT_W           = $clog2(BIST_70US_CYC_NUM+1)  ;
+localparam BIST_CNT_W           = $clog2(BIST_90US_CYC_NUM+1)  ;
 localparam BIST_ITEM_NUM        = 6                            ;
 localparam BIST_SEL_W           = $clog2(BIST_ITEM_NUM+1)      ;
 

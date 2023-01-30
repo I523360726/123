@@ -56,6 +56,7 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic                                        i_io_fsenb_n                    ,
     input  logic                                        i_io_intb                       ,
     input  logic                                        i_io_inta                       ,
+    output logic                                        o_rtmon                         ,
 
     output logic                                        o_bist_hv_ov                    ,
     output logic                                        o_bist_hv_ot                    ,
@@ -602,9 +603,10 @@ assign hv_status1 = {hv_bist_fail, 1'b0, 1'b0, 1'b0,
                      wdg_owt_reg_slv_tmoerr, owt_rx_reg_slv_owtcomerr, wdg_scan_reg_slv_crcerr, spi_reg_slv_err};
     
 assign hv_status2 = {hv_scp_err, hv_desat_err, hv_oc_err, hv_ot_err,
-                     hv_vcc_overr, hv_vcc_uverr, 1'b0, 1'b0};
+                     hv_vcc_overr, hv_vcc_uverr, 1'b0, 1'b0} & {8{hv_ctrl_cur_st!=BIST_ST}};
 
-assign vrtmon = reg_com_config1.rtmon ? ~vge_vce : vge_vce;                 
+assign vrtmon  = reg_com_config1.rtmon ? ~vge_vce : vge_vce;
+assign o_rtmon = reg_com_config1.rtmon;                 
                      
 assign hv_status3 = {vrtmon,     io_fsiso,   io_pwma, io_pwm,
                      io_fsstate, io_fsenb_n, io_intb, io_inta};
@@ -837,7 +839,7 @@ assign hv_bist2[6] = 1'b0;
 assign hv_bist2[7] = 1'b0;
     
 hv_lbist U_HV_LBIST(
-    .i_bist_en                      (lbist_en                           ),
+    .i_bist_en                      (bist_en                            ),
 
     .i_owt_rx_ack                   (owt_rx_rac_vld                     ),
     .i_owt_rx_status                (owt_rx_rac_status                  ),

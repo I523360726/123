@@ -321,39 +321,41 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        lanch_lst_tx_flag <= 1'b0;
-    end
-    else if(lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) begin
-        lanch_lst_tx_flag <= 1'b0;
-    end
-    else if(i_owt_rx_rac_vld & i_owt_rx_rac_status) begin
-        lanch_lst_tx_flag <= 1'b1;        
-    end
-    else;
-end
+//always_ff@(posedge i_clk or negedge i_rst_n) begin
+//    if(~i_rst_n) begin
+//        lanch_lst_tx_flag <= 1'b0;
+//    end
+//    else if(lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) begin
+//        lanch_lst_tx_flag <= 1'b0;
+//    end
+//    else if(i_owt_rx_rac_vld & i_owt_rx_rac_status) begin
+//        lanch_lst_tx_flag <= 1'b1;        
+//    end
+//    else;
+//end
+//
+//always_ff@(posedge i_clk or negedge i_rst_n) begin
+//    if(~i_rst_n) begin
+//        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
+//    end
+//    else if(lanch_lst_tx_flag) begin
+//        lanch_lst_tx_cnt <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) ? LANCH_LST_TX_CNT_W'(0) : (lanch_lst_tx_cnt+1'b1);
+//    end
+//    else begin
+//        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
+//    end
+//end
+//
+//always_ff@(posedge i_clk or negedge i_rst_n) begin
+//    if(~i_rst_n) begin
+//        lanch_last_owt_tx <= 1'b0;
+//    end
+//    else begin
+//        lanch_last_owt_tx <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1));
+//    end
+//end
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
-    end
-    else if(lanch_lst_tx_flag) begin
-        lanch_lst_tx_cnt <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1)) ? LANCH_LST_TX_CNT_W'(0) : (lanch_lst_tx_cnt+1'b1);
-    end
-    else begin
-        lanch_lst_tx_cnt <= LANCH_LST_TX_CNT_W'(0);
-    end
-end
-
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        lanch_last_owt_tx <= 1'b0;
-    end
-    else begin
-        lanch_last_owt_tx <= (lanch_lst_tx_cnt==(MAX_OWT_TX_CYC_NUM-1));
-    end
-end
+assign lanch_last_owt_tx = (i_owt_rx_rac_vld & i_owt_rx_rac_status);
 
 // synopsys translate_off    
 //==================================

@@ -114,15 +114,35 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
+        efuse_load_dly_cnt <= EFUSE_LOAD_DLY_CNT_W'(0);
+    end
+    else if((hv_ctrl_nxt_st==WAIT_ST)) begin
+        if(efuse_load_dly_cnt!=(EFUSE_LOAD_DLY_NUM-1)) begin
+            efuse_load_dly_cnt <= (efuse_load_dly_cnt+1'b1);
+        end
+        else;
+    end
+    else begin
+        efuse_load_dly_cnt <= EFUSE_LOAD_DLY_CNT_W'(0);
+    end
+end
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
         o_efuse_load_req <= 1'b0;
     end
-    else if(i_efuse_load_done) begin
-        o_efuse_load_req <= 1'b0;
+    else if(hv_ctrl_nxt_st==WAIT_ST) begin
+        if(i_efuse_load_done) begin
+            o_efuse_load_req <= 1'b0;
+        end
+        else if(~i_io_test_mode && ~i_reg_efuse_vld && (efuse_load_dly_cnt==(EFUSE_LOAD_DLY_NUM-1))) begin
+            o_efuse_load_req <= 1'b1;
+        end
+        else;
     end
-    else if(~i_io_test_mode & ~i_reg_efuse_vld & (hv_ctrl_nxt_st==WAIT_ST)) begin
-        o_efuse_load_req <= 1'b1;
+    else begin
+        o_efuse_load_req <= 1'b0;        
     end
-    else;
 end
 
 assign o_hv_ctrl_cur_st = hv_ctrl_cur_st;
