@@ -83,6 +83,11 @@ logic                       test_mode           ;
 logic [31:  0]              spi_cnt             ;
 logic                       bistlv_ov           ;
 logic [99:  0]              vsup_ov_ff          ;
+
+realtime                    lv_half_period      ;
+realtime                    hv_half_period      ;
+real                        lv_clk_var_dly      ;
+real                        hv_clk_var_dly      ;
 //==================================        
 //main code
 //==================================
@@ -101,10 +106,28 @@ initial begin
 end
 
 initial begin
+    lv_half_period = 1000.0/(43*2);
+    repeat(20000) begin
+        lv_clk_var_dly = ($urandom_range(3000, 2000));
+        #lv_clk_var_dly;
+        lv_half_period = 1000.0/$urandom_range(43*2, 43*2);
+    end
+end
+
+initial begin
+    hv_half_period = 1000.0/(53*2);
+    repeat(20000) begin
+        hv_clk_var_dly = ($urandom_range(4000, 3000));
+        #hv_clk_var_dly;
+        hv_half_period = 1000.0/$urandom_range(53*2, 53*2);
+    end
+end
+
+initial begin
     lv_clk = $urandom%2;
     #($urandom%60);
     forever begin
-        #(CYC_43MHZ/2) lv_clk = ~lv_clk;
+        #lv_half_period lv_clk = ~lv_clk;
     end
 end
 
@@ -112,7 +135,7 @@ initial begin
     hv_clk = $urandom%2;
     #($urandom%57);
     forever begin
-        #(CYC_53MHZ/2) hv_clk = ~hv_clk;
+        #hv_half_period hv_clk = ~hv_clk;
     end
 end
 
