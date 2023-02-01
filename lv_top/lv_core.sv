@@ -507,15 +507,15 @@ lv_analog_int_proc U_LV_ANALOG_INT_PROC(
     .i_rst_n                    (i_rst_n                                )
 );
 
-assign lv_bist1[7: 1] = 6'b0;
-assign lv_bist2[7: 3] = 4'b0;
+assign lv_bist1[7: 1] = 7'b0;
+assign lv_bist2[7: 3] = 5'b0;
 
 assign lv_bist_fail = |(lv_bist1 | lv_bist2);
 
 assign lv_status1 = {lv_bist_fail, 1'b0, lv_pwm_mmerr, lv_pwm_dterr,
                      wdg_owt_reg_slv_tmoerr, owt_rx_reg_slv_owtcomerr, wdg_scan_reg_slv_crcerr, spi_reg_slv_err};
 
-assign lv_status2 = {6'b0, lv_vsup_ov, ~lv_vsup_uv_n};
+assign lv_status2 = {6'b0, lv_vsup_ov, ~lv_vsup_uv_n} & {8{lv_ctrl_cur_st!=BIST_ST}};
 
 assign lv_status3 = {1'b0,       1'b0,       io_pwma, io_pwm,
                      io_fsstate, io_fsenb_n, io_intb, io_inta};
