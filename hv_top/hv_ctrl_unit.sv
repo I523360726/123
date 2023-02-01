@@ -79,6 +79,7 @@ logic                               bist_st_intb_n_en   ;
 logic                               hv_intb_n           ;
 logic                               fsiso_en            ;
 logic                               efuse_load_done_ff  ;
+logic [EFUSE_LOAD_DLY_CNT_W-1: 0]   efuse_load_dly_cnt  ;
 //==================================
 //main code
 //==================================
