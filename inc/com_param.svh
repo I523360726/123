@@ -15,7 +15,7 @@ parameter OWT_SYNC_BIT_NUM      = 12                                            
 parameter OWT_TAIL_BIT_NUM      = 4                                                         ,
 parameter OWT_ABORT_BIT_NUM     = 4                                                         ,
 parameter OWT_FSM_ST_W          = $clog2(OWT_FSM_ST_NUM)                                    ,
-parameter CNT_OWT_EXT_CYC_W     = $clog2(2*OWT_EXT_CYC_NUM+1)                               ,
+parameter CNT_OWT_EXT_CYC_W     = $clog2(5*OWT_EXT_CYC_NUM+1)                               ,
 parameter CNT_OWT_MAX_W         = $clog2(OWT_ADCD_BIT_NUM)                                  ,
 parameter OWT_IDLE_ST           = OWT_FSM_ST_W'(0)                                          ,
 parameter OWT_SYNC_HEAD_ST      = OWT_FSM_ST_W'(1)                                          ,
@@ -109,9 +109,11 @@ parameter LANCH_LST_TX_CNT_W = $clog2(MAX_OWT_TX_CYC_NUM),
 
 parameter HV_MAX_OWT_RX_CYC_NUM = OWT_HEAD_SYNC_CYC_NUM+2*OWT_TAIL_SYNC_CYC_NUM+OWT_CMD_CYC_NUM+OWT_DATA_CYC_NUM+OWT_CRC_CYC_NUM,
 parameter HV_DLY_RX_ACK_CNT_W   = $clog2(HV_MAX_OWT_RX_CYC_NUM),
+parameter HV_RX_TMO_CNT_W       = $clog2(2*HV_MAX_OWT_RX_CYC_NUM),
 
 parameter MAX_OWT_RX_CYC_NUM = OWT_HEAD_SYNC_CYC_NUM+2*OWT_TAIL_SYNC_CYC_NUM+OWT_CMD_CYC_NUM+OWT_ADCD_CYC_NUM+OWT_CRC_CYC_NUM,
 parameter DLY_RX_ACK_CNT_W   = $clog2(MAX_OWT_RX_CYC_NUM),
+parameter RX_TMO_CNT_W       = $clog2(2*MAX_OWT_RX_CYC_NUM),
 
 
 parameter BIST_OWT_TX_NUM      = 5                                          ,
@@ -124,6 +126,34 @@ parameter BIST_TMO_CNT_W       = $clog2(BIST_TMO_TH)                        ,
 
 parameter EFUSE_LOAD_DLY_NUM   = 20,
 parameter EFUSE_LOAD_DLY_CNT_W = $clog2(EFUSE_LOAD_DLY_NUM),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
