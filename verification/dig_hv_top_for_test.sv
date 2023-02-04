@@ -187,6 +187,7 @@ hv_core U_HV_CORE(
     .i_io_fsenb_n                    (1'b0              ),
     .i_io_intb                       (1'b1              ),
     .i_io_inta                       (1'b1              ),
+    .o_rtmon                         (rtmon             ),    
 
     .o_bist_hv_ov                    (bisthv_ov         ),
     .o_bist_hv_ot                    (bisthv_ot         ),
