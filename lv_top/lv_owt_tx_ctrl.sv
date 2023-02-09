@@ -24,7 +24,8 @@ module lv_owt_tx_ctrl #(
     output logic                            o_lv_hv_owt_tx      ,
 
     output logic [OWT_CMD_BIT_NUM-1:    0]  o_owt_tx_cmd_lock   ,
-
+    output logic                            o_cur_tx_is_spi_req ,
+    
     input  logic                            i_owt_rx_ack        ,
     
     input  logic                            i_clk               ,
@@ -169,6 +170,8 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
+assign o_cur_tx_is_spi_req = cur_tx_is_spi_req;    
+    
 assign owt_rd_tmo = (owt_rd_tmo_cnt==(OWT_TMO_CYC_NUM-1));
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
