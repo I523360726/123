@@ -163,7 +163,7 @@ hv_core U_HV_CORE(
     .i_io_pwm                        (1'b0              ),
     .i_io_fsstate                    (1'b0              ),
     .i_io_fsenb_n                    (1'b0              ),
-    .i_io_intb                       (1'b1              ),
+    //.i_io_intb                       (1'b1              ),
     .i_io_inta                       (1'b1              ),
     .o_rtmon                         (rtmon             ),
 
