@@ -17,6 +17,7 @@ module lv_hv_shadow_reg import com_pkg::*;
     input  logic [OWT_CMD_BIT_NUM-1:    0]  i_owt_rx_cmd            ,
     input  logic [OWT_ADCD_BIT_NUM-1:   0]  i_owt_rx_data           ,
     input  logic                            i_owt_rx_status         ,//0: normal; 1: error. 
+    input  logic                            i_cur_is_spi_req        ,
 
     output str_reg_efuse_config             o_reg_die2_efuse_config ,
     output str_reg_efuse_status             o_reg_die2_efuse_status ,
@@ -59,8 +60,8 @@ assign reg_wen              = i_owt_rx_ack & ~i_owt_rx_status & ~i_owt_rx_cmd[OW
 assign reg_addr             = i_owt_rx_cmd[OWT_CMD_BIT_NUM-2: 0]                                        ;
 assign reg_wdata            = i_owt_rx_data                                                             ;
 assign hit_hv_ang_reg       = (reg_addr>=HV_ANALOG_REG_START_ADDR) & (reg_addr<=HV_ANALOG_REG_END_ADDR) ;
-assign hit_hv_ang_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_ang_reg                          ;
-assign hit_hv_dgt_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_dgt_reg                          ;
+assign hit_hv_ang_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_ang_reg & i_cur_is_spi_req       ;
+assign hit_hv_dgt_reg_vld   = i_owt_rx_ack & ~i_owt_rx_status & hit_hv_dgt_reg & i_cur_is_spi_req       ;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
