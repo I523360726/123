@@ -54,7 +54,7 @@ module hv_core import com_pkg::*; import hv_pkg::*;
     input  logic                                        i_io_pwm                        ,
     input  logic                                        i_io_fsstate                    ,
     input  logic                                        i_io_fsenb_n                    ,
-    input  logic                                        i_io_intb                       ,
+    //input  logic                                        i_io_intb                       ,
     input  logic                                        i_io_inta                       ,
     output logic                                        o_rtmon                         ,
 
@@ -403,14 +403,14 @@ gnrl_sync #(
     .i_rst_n    (i_rst_n         )
 );
 
-gnrl_sync #(
-    .DW(1)
-)U_IO_INTB_SYNC(
-    .i_data     (i_io_intb       ),
-    .o_data     (io_intb         ),
-    .i_clk      (i_clk           ),
-    .i_rst_n    (i_rst_n         )
-);
+//gnrl_sync #(
+//    .DW(1)
+//)U_IO_INTB_SYNC(
+//    .i_data     (i_io_intb       ),
+//    .o_data     (io_intb         ),
+//    .i_clk      (i_clk           ),
+//    .i_rst_n    (i_rst_n         )
+//);
 
 gnrl_sync #(
     .DW(1)
@@ -609,7 +609,7 @@ assign vrtmon  = reg_com_config1.rtmon ? ~vge_vce : vge_vce;
 assign o_rtmon = reg_com_config1.rtmon;                 
                      
 assign hv_status3 = {vrtmon,     io_fsiso,   io_pwma, io_pwm,
-                     io_fsstate, io_fsenb_n, io_intb, io_inta};
+                     io_fsstate, io_fsenb_n, intb_n, io_inta};
     
 assign hv_status4 = {hv_ctrl_cur_st, 4'b0};   
 
