@@ -70,6 +70,7 @@ logic                            rac_spi_ack        ;
 logic [2:                     0] rac_spi_ack_ff     ;
 logic                            pre_load_miso      ;
 logic                            spi_miso           ;
+logic                            lt_acc_gap_err_flg ;
 //==================================
 //main code
 //==================================
@@ -172,16 +173,29 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     else;
 end
 
-assign lt_acc_gap_err = lanch_spi_access & spi_access_flag;
+assign lt_acc_gap_err = ~spi_csb_sync & spi_csb_sync_ff & i_spi_slv_en & spi_access_flag;
+    
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        lt_acc_gap_err_flg <= 1'b0;
+    end
+    else if(lanch_spi_access) begin
+        lt_acc_gap_err_flg <= 1'b0;
+    end
+    else if(lt_acc_gap_err) begin
+        lt_acc_gap_err_flg <= 1'b1;
+    end
+    else;
+end    
 
-assign spi_err = spi_crc_err | lt_acc_gap_err;
+assign spi_err = spi_crc_err | lt_acc_gap_err_flg;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         o_spi_err <= 1'b0;
     end
     else begin
-        o_spi_err <= spi_err;
+        o_spi_err <= (spi_crc_err | lt_acc_gap_err);
     end
 end
 
