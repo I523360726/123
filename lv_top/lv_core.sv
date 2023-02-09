@@ -142,6 +142,7 @@ logic [REG_CRC_W-1:         0]                      reg_rac_rcrc            ;
 logic                                               wdg_owt_adc_req         ;
 logic                                               owt_wdg_adc_ack         ;
 
+logic                                               cur_tx_is_spi_req       ;
 logic [OWT_CMD_BIT_NUM-1:   0]                      owt_tx_cmd_lock         ;
 
 logic                                               owt_rx_ack              ;
@@ -410,6 +411,7 @@ lv_owt_tx_ctrl U_LV_OWT_TX_CTRL(
 
     .o_lv_hv_owt_tx             (o_lv_hv_owt_tx                     ),
 
+    .o_cur_tx_is_spi_req        (cur_tx_is_spi_req                  ),
     .o_owt_tx_cmd_lock          (owt_tx_cmd_lock                    ),
 
     .i_owt_rx_ack               (owt_rx_ack                         ),
@@ -474,6 +476,7 @@ lv_hv_shadow_reg U_LV_HV_SHADOW_REG(
     .i_owt_rx_cmd               (owt_rx_cmd                         ),
     .i_owt_rx_data              (owt_rx_data                        ),
     .i_owt_rx_status            (owt_rx_status                      ),//0: normal; 1: error. 
+    .cur_is_spi_req             (cur_tx_is_spi_req                  ),
 
     .o_reg_die2_efuse_config    (reg_die2_efuse_config              ),
     .o_reg_die2_efuse_status    (reg_die2_efuse_status              ),
