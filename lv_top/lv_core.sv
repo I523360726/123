@@ -476,7 +476,7 @@ lv_hv_shadow_reg U_LV_HV_SHADOW_REG(
     .i_owt_rx_cmd               (owt_rx_cmd                         ),
     .i_owt_rx_data              (owt_rx_data                        ),
     .i_owt_rx_status            (owt_rx_status                      ),//0: normal; 1: error. 
-    .cur_is_spi_req             (cur_tx_is_spi_req                  ),
+    .i_cur_is_spi_req           (cur_tx_is_spi_req                  ),
 
     .o_reg_die2_efuse_config    (reg_die2_efuse_config              ),
     .o_reg_die2_efuse_status    (reg_die2_efuse_status              ),
