@@ -548,7 +548,7 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         owt_com_err_cnt <= INIT_OWT_COM_ERR_NUM;
     end
-    else if(owt_rx_ack & owt_rx_status) begin
+    else if((owt_rx_ack & owt_rx_status) || (rx_tmo_cnt==(2*HV_MAX_OWT_RX_CYC_NUM-1)) begin
         if((owt_com_err_cnt+OWT_COM_ERR_SET_NUM[owt_com_err_add_sel])>=OWT_COM_MAX_ERR_NUM) begin
             owt_com_err_cnt <= OWT_COM_MAX_ERR_NUM;
         end
