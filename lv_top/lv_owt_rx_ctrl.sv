@@ -86,6 +86,7 @@ logic [CNT_OWT_EXT_CYC_W-1:     0]  two_symbol_dn_th    ;
 logic [CNT_OWT_EXT_CYC_W-1:     0]  two_symbol_up_th    ;
 logic [CNT_OWT_EXT_CYC_W-1:     0]  three_symbol_dn_th  ;
 logic [CNT_OWT_EXT_CYC_W-1:     0]  three_symbol_up_th  ;
+logic [CNT_OWT_EXT_CYC_W-1:     0]  thr_sym_cnt_in_tail ;
 logic                               one_symbol_vld      ;
 logic                               two_symbol_vld      ;
 logic                               three_symbol_vld    ;
@@ -170,21 +171,42 @@ always_ff@(posedge i_clk or negedge i_rst_n) begin
         if((rx_cnt_bit==CNT_OWT_MAX_W'(1)) & symbol_cyc_cnt_vld) begin
             symbol_cyc_cnt_ave <= symbol_cyc_cnt;
         end
-        else if((rx_cnt_bit>CNT_OWT_MAX_W'(1)) & (rx_cnt_bit<CNT_OWT_MAX_W'(10)) & symbol_cyc_cnt_vld) begin
+        else if((rx_cnt_bit>=CNT_OWT_MAX_W'(1)) & (rx_cnt_bit<=CNT_OWT_MAX_W'(10)) & symbol_cyc_cnt_vld) begin
             symbol_cyc_cnt_ave <= symbol_cyc_cnt_tmp[CNT_OWT_EXT_CYC_W: 1];    
         end
     end
     else;
 end
 
-assign one_symbol_up_th   = (symbol_cyc_cnt_ave+(symbol_cyc_cnt_ave+1)/2);
+assign one_symbol_up_th   = symbol_cyc_cnt_ave+3;
 assign two_symbol_dn_th   = one_symbol_up_th+1;
-assign two_symbol_up_th   = (2*symbol_cyc_cnt_ave+(symbol_cyc_cnt_ave+1)/2);
+assign two_symbol_up_th   = thr_sym_cnt_in_tail-4;
 assign three_symbol_dn_th = two_symbol_up_th+1;
 
-assign one_symbol_vld   = symbol_cyc_cnt_vld & (symbol_cyc_cnt<=one_symbol_up_th);
-assign two_symbol_vld   = symbol_cyc_cnt_vld & (symbol_cyc_cnt>=two_symbol_dn_th) & (symbol_cyc_cnt<=two_symbol_up_th);
-assign three_symbol_vld = symbol_cyc_cnt_vld & (symbol_cyc_cnt>=three_symbol_dn_th);
+assign one_symbol_vld   = (owt_rx_cur_st>OWT_SYNC_TAIL_ST) & symbol_cyc_cnt_vld & (symbol_cyc_cnt<=one_symbol_up_th);
+assign two_symbol_vld   = (owt_rx_cur_st>OWT_SYNC_TAIL_ST) & symbol_cyc_cnt_vld & 
+                          (((symbol_cyc_cnt>=two_symbol_dn_th) & (symbol_cyc_cnt<=two_symbol_up_th) & 
+                            (owt_rx_cur_st==OWT_CMD_ST) & (rx_cnt_bit==CNT_OWT_MAX_W'(0))) || 
+                           ((symbol_cyc_cnt>=two_symbol_dn_th) & ~((owt_rx_cur_st==OWT_CMD_ST) & (rx_cnt_bit==CNT_OWT_MAX_W'(0))))
+                          );
+assign three_symbol_vld = (owt_rx_cur_st==OWT_CMD_ST) & symbol_cyc_cnt_vld & (symbol_cyc_cnt>=three_symbol_dn_th)
+                           & (rx_cnt_bit==CNT_OWT_MAX_W'(0));
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        thr_sym_cnt_in_tail <= CNT_OWT_EXT_CYC_W'(0);
+    end
+    else if(owt_rx_cur_st==OWT_IDLE_ST) begin
+        thr_sym_cnt_in_tail <= CNT_OWT_EXT_CYC_W'(0);
+    end
+    else if(owt_rx_cur_st==OWT_SYNC_TAIL_ST) begin
+        if(rx_neg_ff & symbol_cyc_cnt_vld) begin
+            thr_sym_cnt_in_tail <= symbol_cyc_cnt;            
+        end
+        else;
+    end
+    else;
+end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
