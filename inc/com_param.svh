@@ -27,7 +27,7 @@ parameter OWT_CRC_ST            = OWT_FSM_ST_W'(6)                              
 parameter OWT_END_TAIL_ST       = OWT_FSM_ST_W'(7)                                          ,
 parameter OWT_ABORT_ST          = OWT_FSM_ST_W'(8)                                          ,
 
-parameter CLK_M                 =  53 ,
+parameter CLK_M                 =  22 ,
 parameter WDG_240US_CYC_NUM     =  240*CLK_M ,
 parameter WDG_250US_CYC_NUM     =  250*CLK_M ,
 parameter WDG_280US_CYC_NUM     =  280*CLK_M , //one core clk cycle is (1000/48)ns, 280us has (280x1000)ns/(1000/48)ns = 280x48 cycle.
