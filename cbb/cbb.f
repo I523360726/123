@@ -6,6 +6,7 @@
 -v $PRJ_ROOT/cbb/rstn_merge.sv
 -v $PRJ_ROOT/cbb/rstn_sync.sv
 -v $PRJ_ROOT/cbb/signal_detect.sv
+-v $PRJ_ROOT/cbb/signal_flt.sv
 -v $PRJ_ROOT/cbb/signal_extend.sv
 -v $PRJ_ROOT/cbb/tree_adder.sv
 
