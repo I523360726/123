@@ -29,6 +29,7 @@ module lv_core import com_pkg::*; import lv_pkg::*;
     input  logic                                        i_io_fsenb_n                    ,
     output logic                                        o_fsm_ang_test_en               ,//vl_pins32
     input  logic                                        i_hv_pwm_intb_n                 ,
+    output logic                                        o_inta_n                        ,
     input  logic                                        i_lv_vsup_ov                    ,
     input  logic                                        i_lv_vsup_uv_n                  ,
     input  logic                                        i_lv_pwm_dt                     ,
@@ -665,8 +666,9 @@ lv_ctrl_unit U_LV_CTRL_UNIT(
 );
 
 lv_pwm_intb_decode U_LV_PWM_INTB_DECODE(
+    .i_rtmon                    (reg_com_config1.rtmon              ),
     .i_hv_pwm_intb_n            (i_hv_pwm_intb_n                    ),
-    .o_lv_pwm_gwave             (                                   ),
+    .o_lv_pwm_gwave             (o_inta_n                           ),
     .o_hv_intb_n                (hv_intb_n                          ),
     .o_hv_intb0_pulse           (hv_intb0_pulse                     ),
     .o_hv_intb1_pulse           (hv_intb1_pulse                     ),

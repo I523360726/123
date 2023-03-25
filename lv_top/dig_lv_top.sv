@@ -19,6 +19,7 @@ module dig_lv_top
    output logic                                        d1d2_data                        , //o_lv_hv_owt_tx
    input  logic                                        d2d1_data                        , //i_hv_lv_owt_rx
    input  logic                                        d21_gate_back                    , //i_hv_pwm_intb_n
+   output logic                                        inta_o                           ,
 
    input  logic                                        tm                               , //i_io_test_mode
    output logic                                        vl_pins32                        , //o_fsm_ang_test_en
@@ -112,7 +113,8 @@ lv_core U_LV_CORE(
     .o_lv_hv_owt_tx                  (d1d2_data                 ),
     .i_hv_lv_owt_rx                  (d2d1_data                 ),
     .i_hv_pwm_intb_n                 (d21_gate_back             ),
-
+    .o_inta_n                        (inta_o                    ),
+    
     .i_io_test_mode                  (tm                        ), 
     .o_fsm_ang_test_en               (vl_pins32                 ), 
     .i_setb                          (setb                      ), 

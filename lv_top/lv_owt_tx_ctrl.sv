@@ -234,6 +234,9 @@ always_comb begin
             if(owt_tx_abort) begin
                 owt_tx_nxt_st = OWT_ABORT_ST;
             end
+            else if(tx_bit_done & cur_tx_is_spi_req & (spi_owt_rw_flag==RD_OP) & (i_spi_owt_addr==7'h1F)) begin
+                owt_tx_nxt_st = OWT_CRC_ST;            
+            end
             else if(tx_bit_done & cur_tx_is_spi_req) begin
                 owt_tx_nxt_st = OWT_NML_DATA_ST;
             end

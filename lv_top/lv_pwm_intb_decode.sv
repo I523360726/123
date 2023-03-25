@@ -12,6 +12,7 @@ module lv_pwm_intb_decode #(
     `include "lv_param.svh"
     parameter END_OF_LIST = 1
 )( 
+    input  logic           i_rtmon                          ,
     input  logic           i_hv_pwm_intb_n                  ,
 
     output logic           o_lv_pwm_gwave                   ,
@@ -26,17 +27,17 @@ module lv_pwm_intb_decode #(
 //==================================
 //local param delcaration
 //==================================
-localparam PWM_DETECT_CNT_W         = $clog2(PWM_INTB_EXT_CYC_NUM+1);
-localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(4)          ;
-localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(12)         ;
+localparam PWM_DETECT_CNT_W         = $clog2(2*PWM_INTB_EXT_CYC_NUM+1);
+localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(4)            ;
+localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(12)           ;
 
-localparam PWM_INTB_FSM_ST_NUM      = 5                             ;
-localparam PWM_INTB_FSM_ST_W        = $clog2(PWM_INTB_FSM_ST_NUM)   ;
-localparam PWM_INTB_FSM_IDLE_ST     = PWM_INTB_FSM_ST_W'(0)         ;
-localparam PWM_INTB_FSM_DETECT_0_ST = PWM_INTB_FSM_ST_W'(1)         ;
-localparam PWM_INTB_FSM_DETECT_1_ST = PWM_INTB_FSM_ST_W'(2)         ;
-localparam PWM_INTB_FSM_DETECT_2_ST = PWM_INTB_FSM_ST_W'(3)         ;
-localparam PWM_INTB_FSM_DETECT_3_ST = PWM_INTB_FSM_ST_W'(4)         ;
+localparam PWM_INTB_FSM_ST_NUM      = 5                               ;
+localparam PWM_INTB_FSM_ST_W        = $clog2(PWM_INTB_FSM_ST_NUM)     ;
+localparam PWM_INTB_FSM_IDLE_ST     = PWM_INTB_FSM_ST_W'(0)           ;
+localparam PWM_INTB_FSM_DETECT_0_ST = PWM_INTB_FSM_ST_W'(1)           ;
+localparam PWM_INTB_FSM_DETECT_1_ST = PWM_INTB_FSM_ST_W'(2)           ;
+localparam PWM_INTB_FSM_DETECT_2_ST = PWM_INTB_FSM_ST_W'(3)           ;
+localparam PWM_INTB_FSM_DETECT_3_ST = PWM_INTB_FSM_ST_W'(4)           ;
 //==================================
 //var delcaration
 //==================================
@@ -52,7 +53,6 @@ logic                           hv_pwm_intb_n           ;
 //==================================
 //main code
 //==================================
-assign o_lv_pwm_gwave = i_hv_pwm_intb_n;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
@@ -169,6 +169,19 @@ signal_detect #(
     .i_rst_n      (i_rst_n              )
 );
 
+signal_flt #(
+    .CNT_W (PWM_DETECT_CNT_W    ) ,
+    .DN_TH (CNT_DN_TH           ) ,
+    .UP_TH (CNT_UP_TH           ) ,
+    .MODE  (0                   ) 
+) U_SIG_FLT ( 
+    .i_vld        (1'b1                 ),
+    .i_vld_data   (hv_pwm_intb_n        ),
+    .i_rtmon      (i_rtmon              ),
+    .o_flt_sig    (o_lv_pwm_gwave       ),
+    .i_clk        (i_clk                ),
+    .i_rst_n      (i_rst_n              )
+);
 // synopsys translate_off    
 //==================================
 //assertion

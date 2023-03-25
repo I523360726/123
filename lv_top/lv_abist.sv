@@ -101,8 +101,9 @@ end
 assign dgt_ang_start = i_bist_en & ~bist_en_ff;
 assign dgt_ang_end   = (i_lv_vsup_ov & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) || 
                        (~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel);
-assign abist_end     = (~i_lv_vsup_ov & lv_vsup_ov_ff & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) || 
-                       (~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel);
+//assign abist_end     = (~i_lv_vsup_ov & lv_vsup_ov_ff & (bist_cnt<BIST_70US_CYC_NUM) & ~bist_sel) || 
+//                       (~i_lv_vsup_ov & (bist_cnt>=BIST_70US_CYC_NUM) & ~bist_sel);
+assign abist_end = dgt_ang_end;
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
