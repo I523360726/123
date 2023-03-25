@@ -163,8 +163,9 @@ generate;
         end
 
         always_comb begin
-            one_abist_end[i] = (~bist_detect_sig[i] & bist_detect_sig_ff[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) |
-                            (~bist_detect_sig[i] & (bist_cnt>=BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0]));
+            //one_abist_end[i] = (~bist_detect_sig[i] & bist_detect_sig_ff[i] & (bist_cnt<BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0])) |
+            //                (~bist_detect_sig[i] & (bist_cnt>=BIST_CYC_NUM[i]) & (bist_sel==i[BIST_SEL_W-1: 0]));
+            one_abist_end[i] = dgt_ang_end[i];
         end
 
         always_ff@(posedge i_clk or negedge i_rst_n) begin
