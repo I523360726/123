@@ -32,35 +32,51 @@ logic [CNT_W-1: 0]  cnt             ;
 logic               detect_start    ;
 logic               detect_continue ;
 logic               detect_end      ;
-logic               detect_revert   ;
 logic               last_vld        ;
 logic               last_vld_data   ;
-logic               detect_hold     ;
+logic               detect_revert   ;
 logic               flt_sig         ;
+logic               revert_flg      ;
 //==================================
 //main code
 //==================================
 assign detect_start     = i_vld & last_vld & (i_vld_data!=last_vld_data);
 assign detect_continue  = i_vld & last_vld & (i_vld_data==last_vld_data);
 
-assign detect_end       = i_vld & last_vld & (i_vld_data!=last_vld_data) & (cnt>=DN_TH) & (cnt<=UP_TH);
-assign detect_revert    = i_vld & last_vld & (i_vld_data!=last_vld_data) & (cnt> UP_TH); 
-assign detect_hold      = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=UP_TH);
+//assign detect_end       = i_vld & last_vld & (i_vld_data!=last_vld_data) & (cnt>=DN_TH) & (cnt<=UP_TH); 
+assign detect_revert      = i_vld & last_vld & (i_vld_data==last_vld_data) & (cnt>=UP_TH);
+
+always_ff@(posedge i_clk or negedge i_rst_n) begin
+    if(~i_rst_n) begin
+        revert_flg <= 1'b0;
+    end
+    else if(detect_start) begin
+        revert_flg <= 1'b1;
+    end
+    else if(detect_revert) begin
+        revert_flg <= 1'b0;
+    end
+    else;
+end
+
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
         cnt <= CNT_W'(0);
     end
-    else if(detect_end | detect_start) begin
+    else if(detect_start) begin
         cnt <= CNT_W'(1);
     end
-    else if(detect_hold) begin
-        cnt <= (UP_TH+1'b1);
-    end
-    else if(detect_continue) begin
-        cnt <= cnt + 1'b1;
+    else if(revert_flg) begin
+        if(detect_revert) begin
+            cnt <= CNT_W'(0);
+        end
+        else if(detect_continue) begin
+            cnt <= cnt + 1'b1;
+        end
+        else;
     end
     else begin
-        cnt <= CNT_W'(1);
+        cnt <= CNT_W'(0);
     end
 end
 
