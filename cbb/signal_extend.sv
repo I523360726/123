@@ -78,9 +78,18 @@ if(EXTEND_CYC_NUM>1) begin: EXTEND_GT_1_BLK
     end
 end
 else begin: EXTEND_EQ_1_BLK
-    assign o_vld        = i_vld     ;
-    assign o_vld_data   = i_vld_data;
-    assign o_done       = i_vld     ;
+    always_ff@(posedge i_clk or negedge i_rst_n) begin
+        if(~i_rst_n) begin
+            o_vld        <= 1'b0;
+            o_vld_data   <= 1'b0;
+            o_done       <= 1'b0;
+        end
+        else begin
+            o_vld        <= i_vld;
+            o_vld_data   <= (i_vld & i_vld_data);
+            o_done       <= i_vld;    
+        end
+    end
 end
 endgenerate
 // synopsys translate_off    
