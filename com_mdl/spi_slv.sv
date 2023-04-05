@@ -237,7 +237,7 @@ end
 
 always_ff@(posedge i_clk or negedge i_rst_n) begin
     if(~i_rst_n) begin
-        slv_rsp_bit <= {SPI_RX_CHK_BIT_NUM'(0), 0xB8};
+        slv_rsp_bit <= {SPI_RX_CHK_BIT_NUM'(0), 8'hB8};
     end
     else if(rac_spi_ack) begin
         slv_rsp_bit <= {rac_rsp_data, crc16to8_out};
