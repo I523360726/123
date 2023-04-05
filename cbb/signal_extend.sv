@@ -34,46 +34,55 @@ logic               vld_data_lock   ;
 //==================================
 //main code
 //==================================
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        vld_lock        <= 1'b0;
-        vld_data_lock   <= 1'b0;
+generate
+if(EXTEND_CYC_NUM>1) begin: EXTEND_GT_1_BLK
+    always_ff@(posedge i_clk or negedge i_rst_n) begin
+        if(~i_rst_n) begin
+            vld_lock        <= 1'b0;
+            vld_data_lock   <= 1'b0;
+        end
+        else if(i_vld) begin
+            vld_lock        <= 1'b1;
+            vld_data_lock   <= i_vld_data;
+        end
+        else if(cnt==(EXTEND_CYC_NUM-1)) begin
+            vld_lock        <= 1'b0;
+            vld_data_lock   <= 1'b0;
+        end
+        else;
     end
-    else if(i_vld) begin
-        vld_lock        <= 1'b1;
-        vld_data_lock   <= i_vld_data;
-    end
-    else if(cnt==(EXTEND_CYC_NUM-1)) begin
-        vld_lock        <= 1'b0;
-        vld_data_lock   <= 1'b0;
-    end
-    else;
-end
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        cnt <= CNT_W'(0);
+    always_ff@(posedge i_clk or negedge i_rst_n) begin
+        if(~i_rst_n) begin
+            cnt <= CNT_W'(0);
+        end
+        else if(i_vld | vld_lock) begin
+            cnt <= (cnt==(EXTEND_CYC_NUM-1)) ? CNT_W'(0) : (cnt+1'b1);
+        end
+        else begin
+            cnt <= CNT_W'(0);
+        end
     end
-    else if(i_vld | vld_lock) begin
-        cnt <= (cnt==(EXTEND_CYC_NUM-1)) ? CNT_W'(0) : (cnt+1'b1);
-    end
-    else begin
-        cnt <= CNT_W'(0);
-    end
-end
 
-always_ff@(posedge i_clk or negedge i_rst_n) begin
-    if(~i_rst_n) begin
-        o_vld        <= 1'b0;
-        o_vld_data   <= 1'b0;
-        o_done       <= 1'b0;
-    end
-    else begin
-        o_vld        <= i_vld | vld_lock;
-        o_vld_data   <= (i_vld & i_vld_data) | (vld_lock & vld_data_lock);
-        o_done       <= (cnt==(EXTEND_CYC_NUM-1));    
+    always_ff@(posedge i_clk or negedge i_rst_n) begin
+        if(~i_rst_n) begin
+            o_vld        <= 1'b0;
+            o_vld_data   <= 1'b0;
+            o_done       <= 1'b0;
+        end
+        else begin
+            o_vld        <= i_vld | vld_lock;
+            o_vld_data   <= (i_vld & i_vld_data) | (vld_lock & vld_data_lock);
+            o_done       <= (cnt==(EXTEND_CYC_NUM-1));    
+        end
     end
 end
+else begin: EXTEND_EQ_1_BLK
+    assign o_vld        = i_vld     ;
+    assign o_vld_data   = i_vld_data;
+    assign o_done       = i_vld     ;
+end
+endgenerate
 // synopsys translate_off    
 //==================================
 //assertion
