@@ -70,7 +70,7 @@ parameter SPI_TMO_CNT_W         = $clog2(SPI_TMO_CYC_NUM),
 parameter OWT_TMO_CYC_NUM       = WDG_3010US_CYC_NUM,
 parameter OWT_TMO_CNT_W         = $clog2(OWT_TMO_CYC_NUM),
 
-parameter PWM_INTB_EXT_CYC_NUM  = 8,
+parameter PWM_INTB_EXT_CYC_NUM  = 1,
 parameter HV_DV_ID              = 4'(2),
 parameter LV_DV_ID              = 4'(1),
 
