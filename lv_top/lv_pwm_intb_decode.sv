@@ -28,8 +28,8 @@ module lv_pwm_intb_decode #(
 //local param delcaration
 //==================================
 localparam PWM_DETECT_CNT_W         = $clog2(2*PWM_INTB_EXT_CYC_NUM+1);
-localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(4)            ;
-localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(12)           ;
+localparam CNT_DN_TH                = PWM_DETECT_CNT_W'(1)            ;
+localparam CNT_UP_TH                = PWM_DETECT_CNT_W'(2)           ;
 
 localparam PWM_INTB_FSM_ST_NUM      = 5                               ;
 localparam PWM_INTB_FSM_ST_W        = $clog2(PWM_INTB_FSM_ST_NUM)     ;
@@ -161,8 +161,8 @@ signal_detect #(
 ) U_BIT_DETECT ( 
     .i_vld        (1'b1                 ),
     .i_vld_data   (hv_pwm_intb_n        ),
-    .i_dn_th      (4'b0                 ),
-    .i_up_th      (4'b0                 ),
+    .i_dn_th      (5'b0                 ),
+    .i_up_th      (5'b0                 ),
     .o_vld        (bit_detect_out_vld   ),
     .o_vld_data   (bit_detect_out       ),
     .i_clk        (i_clk                ),
@@ -172,8 +172,7 @@ signal_detect #(
 signal_flt #(
     .CNT_W (PWM_DETECT_CNT_W    ) ,
     .DN_TH (CNT_DN_TH           ) ,
-    .UP_TH (CNT_UP_TH           ) ,
-    .MODE  (0                   ) 
+    .UP_TH (CNT_UP_TH           )  
 ) U_SIG_FLT ( 
     .i_vld        (1'b1                 ),
     .i_vld_data   (hv_pwm_intb_n        ),
